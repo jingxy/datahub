@@ -42,7 +42,7 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
 
-	token, entrypoint, err := getAccessToken(url)
+	token, entrypoint, err := getAccessToken(url, w)
 	if err != nil {
 		log.Println(err)
 		strret = err.Error()
@@ -172,7 +172,7 @@ func download(url string, p ds.DsPull) (int64, error) {
 	return n, nil
 }
 
-func getAccessToken(url string /*, w http.ResponseWriter*/) (token, entrypoint string, err error) {
+func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string, err error) {
 	//log.Println("can't get access token,direct download..")
 	//return nil
 
@@ -192,10 +192,10 @@ func getAccessToken(url string /*, w http.ResponseWriter*/) (token, entrypoint s
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(resp.StatusCode, string(body))
 	if resp.StatusCode != 200 {
-		/*
-			w.WriteHeader(resp.StatusCode)
-			w.Write(body)
-		*/
+
+		w.WriteHeader(resp.StatusCode)
+		w.Write(body)
+
 		return "", "", errors.New(string(body))
 	} else {
 
