@@ -41,6 +41,7 @@ func Login(login bool, args []string) (err error) {
 	resp, err := commToDaemon("get", "/users/auth", jsondata) //users/auth
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	defer resp.Body.Close()
 	//fmt.Println("login return", resp.StatusCode)
@@ -53,7 +54,7 @@ func Login(login bool, args []string) (err error) {
 	} else {
 		if /*resp.StatusCode == 401 &&*/ login {
 			body, _ := ioutil.ReadAll(resp.Body)
-			fmt.Println("login failed:", string(body))
+			fmt.Println("login failed. ", string(body))
 		}
 		return fmt.Errorf("ERROR %d: login failed.", resp.StatusCode)
 	}

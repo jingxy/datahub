@@ -73,13 +73,22 @@ func Repo(login bool, args []string) (err error) {
 			return errors.New("The parameter after repo is in wrong format!")
 		}
 	}
-	fmt.Println(uri)
+	//fmt.Println(uri)
 	resp, err := commToDaemon("get", uri, nil)
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
 		repoResp(icmd, body, repo, item, tag)
 	} else if resp.StatusCode == 401 || resp.StatusCode == 400 {
+		result := ds.Result{}
+		err := json.Unmarshal(body, &result)
+		if err != nil {
+			panic(err)
+		}
+		if result.Code != 1016 {
+			fmt.Println(result.Msg)
+			return nil
+		}
 		//fmt.Println(resp.StatusCode, "returned....")
 		if err := Login(false, nil); err == nil {
 			Repo(login, args)
