@@ -27,7 +27,7 @@ func Pull(login bool, args []string) (err error) {
 	}
 
 	var repo, item string
-	ds := ds.DsPull{}
+	dstruc := ds.DsPull{}
 	if url := strings.Split(source, "/"); len(url) != 2 {
 		fmt.Println("invalid argument..")
 		pullUsage()
@@ -42,14 +42,14 @@ func Pull(login bool, args []string) (err error) {
 		//uri = fmt.Sprintf("%s/%s:%s", url[0], target[0], target[1])
 		repo = url[0]
 		item = target[0]
-		ds.Tag = target[1]
-		ds.DestName = ds.Tag
-		ds.Datapool = args[1]
+		dstruc.Tag = target[1]
+		dstruc.DestName = dstruc.Tag
+		dstruc.Datapool = args[1]
 	}
 
 	//fmt.Println("uri:", uri)
 
-	jsonData, err := json.Marshal(ds)
+	jsonData, err := json.Marshal(dstruc)
 	if err != nil {
 		return
 	}
@@ -76,7 +76,15 @@ func Pull(login bool, args []string) (err error) {
 			return err
 		}
 	} else {
-		fmt.Println(resp.StatusCode)
+		body, _ := ioutil.ReadAll(resp.Body)
+		result := ds.Result{}
+		err := json.Unmarshal(body, &result)
+		if err != nil {
+			fmt.Println(err.Error())
+			return err
+		}
+		fmt.Println(resp.StatusCode, result.Msg, ", please ensure you have subscribed the repository/dataitem.")
+		return nil
 	}
 	//body, _ := ioutil.ReadAll(resp.Body)
 	//fmt.Println(body)
