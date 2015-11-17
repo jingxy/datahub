@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/utils"
+	"io/ioutil"
 	"os"
 )
 
@@ -39,7 +40,7 @@ func Login(login bool, args []string) (err error) {
 
 	resp, err := commToDaemon("get", "/users/auth", jsondata) //users/auth
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
 	defer resp.Body.Close()
 	//fmt.Println("login return", resp.StatusCode)
@@ -50,8 +51,9 @@ func Login(login bool, args []string) (err error) {
 		}
 		return
 	} else {
-		if resp.StatusCode == 401 && login {
-			fmt.Println("login failed.")
+		if /*resp.StatusCode == 401 &&*/ login {
+			body, _ := ioutil.ReadAll(resp.Body)
+			fmt.Println("login failed:", string(body))
 		}
 		return fmt.Errorf("ERROR %d: login failed.", resp.StatusCode)
 	}

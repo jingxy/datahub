@@ -79,7 +79,7 @@ func Repo(login bool, args []string) (err error) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
 		repoResp(icmd, body, repo, item, tag)
-	} else if resp.StatusCode == 401 {
+	} else if resp.StatusCode == 401 || resp.StatusCode == 400 {
 		//fmt.Println(resp.StatusCode, "returned....")
 		if err := Login(false, nil); err == nil {
 			Repo(login, args)

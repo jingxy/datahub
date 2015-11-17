@@ -47,6 +47,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println(err)
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+
 		return
 	}
 	defer resp.Body.Close()
