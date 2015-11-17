@@ -229,30 +229,27 @@ func RunDaemon() {
 
 /*pull parses filename and target IP from HTTP GET method, and start downloading routine. */
 func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	log.Println("p2p pull...")
+	log.Println("p2p pull...", r.URL.Path)
 	r.ParseForm()
 	sRepoName := ps.ByName("repo")
 	sDataItem := ps.ByName("dataitem")
 	sTag := ps.ByName("tag")
-	/*
-		tokenValid := false
 
-		token := r.Form.Get("token")
-		username := r.Form.Get("username")
-		if len(token) > 0 && len(username) > 0 {
-			log.Println(r.URL.Path, "token:", token, "username:", username)
-			url := "/transaction/" + sRepoName + "/" + sDataItem + "/" + sTag +
-				"?cypt_accesstoken=" + token + "&username=" + username
-			tokenValid = checkAccessToken(url)
-		}
-	*/
+	tokenValid := false
 
-	//if !tokenValid {
-	//	rw.WriteHeader(http.StatusForbidden)
-	//	return
-	//}
+	token := r.Form.Get("token")
+	username := r.Form.Get("username")
+	if len(token) > 0 && len(username) > 0 {
+		log.Println(r.URL.Path, "token:", token, "username:", username)
+		url := "/transaction/" + sRepoName + "/" + sDataItem + "/" + sTag +
+			"?cypt_accesstoken=" + token + "&username=" + username
+		tokenValid = checkAccessToken(url)
+	}
 
-	//file := r.Form.Get("file")
+	if !tokenValid {
+		http.Error(rw, "Bad Request", http.StatusBadRequest)
+		return
+	}
 
 	log.Println(sRepoName, sDataItem, sTag)
 	var irpdmid, idpid int
@@ -343,11 +340,12 @@ func checkAccessToken(tokenUrl string) bool {
 		Valid bool `json:"valid"`
 	}
 	tkresp := tokenDs{}
-	if err = json.Unmarshal(body, &tkresp); err == nil {
-		return tkresp.Valid
+	result := &ds.Result{Data: &tkresp}
+	if err = json.Unmarshal(body, &result); err != nil {
+		log.Println(err)
 	}
 
-	return false
+	return tkresp.Valid
 }
 
 func init() {

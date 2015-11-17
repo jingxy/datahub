@@ -55,7 +55,7 @@ func repoResp(detail bool, respbody []byte, repoitem string) {
 
 	if detail {
 		subs := ds.Data{}
-		result := &Result{Data: &subs}
+		result := &ds.Result{Data: &subs}
 		err := json.Unmarshal(respbody, &result)
 		if err != nil {
 			panic(err)
@@ -67,7 +67,7 @@ func repoResp(detail bool, respbody []byte, repoitem string) {
 		}
 	} else {
 		subs := []ds.Data{}
-		result := &Result{Data: &subs}
+		result := &ds.Result{Data: &subs}
 		err := json.Unmarshal(respbody, &result)
 		if err != nil {
 			panic(err)

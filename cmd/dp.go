@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/asiainfoLDP/datahub/ds"
 	"io/ioutil"
 )
 
@@ -67,7 +68,7 @@ func Dp(needLogin bool, args []string) (err error) {
 func dpResp(bDetail bool, RespBody []byte) {
 	if bDetail == false {
 		strcDps := []FormatDp{}
-		result := &Result{Data: &strcDps}
+		result := &ds.Result{Data: &strcDps}
 		err := json.Unmarshal(RespBody, result)
 		if err != nil {
 			fmt.Println("Get /datapools  dpResp json.Unmarshal error!")
@@ -84,7 +85,7 @@ func dpResp(bDetail bool, RespBody []byte) {
 		}
 	} else {
 		strcDp := FormatDpDetail{}
-		result := &Result{Data: &strcDp}
+		result := &ds.Result{Data: &strcDp}
 		err := json.Unmarshal(RespBody, &result)
 		if err != nil {
 			fmt.Println("Get /datapools/:dpname  dpResp json.Unmarshal error!")
@@ -108,7 +109,7 @@ func dpResp(bDetail bool, RespBody []byte) {
 }
 
 func GetResultMsg(RespBody []byte, bprint bool) (sMsgResp string) {
-	result := &Result{}
+	result := &ds.Result{}
 	err := json.Unmarshal(RespBody, result)
 	if err != nil {
 		sMsgResp = "Get /datapools  dpResp json.Unmarshal error!"

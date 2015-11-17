@@ -84,7 +84,7 @@ func dpGetAllHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 	//msg := &ds.MsgResp{}
 	//msg.Msg = "OK."
 	dps := []cmd.FormatDp{}
-	result := &cmd.Result{Code: cmd.ResultOK, Data: &dps} //must use a pointer dps to initial Data
+	result := &ds.Result{Code: cmd.ResultOK, Data: &dps} //must use a pointer dps to initial Data
 	onedp := cmd.FormatDp{}
 	sqlDp := fmt.Sprintf(`SELECT DPNAME, DPTYPE FROM DH_DP WHERE STATUS = 'A'`)
 	rows, err := g_ds.QueryRows(sqlDp)
@@ -132,7 +132,7 @@ func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 	}*/
 
 	onedp := cmd.FormatDpDetail{}
-	result := &cmd.Result{Code: cmd.ResultOK, Data: &onedp}
+	result := &ds.Result{Code: cmd.ResultOK, Data: &onedp}
 
 	sqlTotal := fmt.Sprintf(`SELECT COUNT(*) FROM DH_DP 
 		WHERE STATUS = 'A' AND DPNAME = '%s'`, string(dpname))
@@ -186,7 +186,7 @@ func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 }
 
-func SqlExecError(rw http.ResponseWriter, result *cmd.Result, msg string) {
+func SqlExecError(rw http.ResponseWriter, result *ds.Result, msg string) {
 	result.Msg = msg
 	result.Code = cmd.ErrorSqlExec
 	resp, _ := json.Marshal(result)

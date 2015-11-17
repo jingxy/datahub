@@ -33,12 +33,6 @@ type Command struct {
 	NeedLogin bool
 }
 
-type Result struct {
-	Code int         `json:"code,omitempty"`
-	Msg  string      `json:"mag,omitempty"`
-	Data interface{} `json:"data,omitempty"`
-}
-
 type MsgResp struct {
 	Msg string `json:"msg"`
 }

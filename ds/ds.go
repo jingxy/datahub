@@ -18,6 +18,11 @@ type DsPull struct {
 	Repository string `json:"repository, omitempty"`
 	Dataitem   string `jsong:"dataitem, omitempty"`
 }
+type Result struct {
+	Code int         `json:"code,omitempty"`
+	Msg  string      `json:"msg,omitempty"`
+	Data interface{} `json:"data,omitempty"`
+}
 
 const (
 	DB_DML_INSERT = "insert"
