@@ -39,21 +39,26 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	} else {
 		strret = reqJson.Repository + "/" + reqJson.Dataitem + "/" + reqJson.Tag + " will be pull into " + reqJson.Datapool
 	}
-	fmt.Println(strret)
-	msgret := ds.MsgResp{Msg: strret}
-	resp, _ := json.Marshal(msgret)
-	w.Write(resp)
 
-	//url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
+	url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
 
-	//token, entrypoint, err := getAccessToken(url, w)
-	/*if err != nil {
+	token, entrypoint, err := getAccessToken(url)
+	if err != nil {
+		log.Println(err)
+		strret = err.Error()
 		return
 	} else {
 		url = "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag +
-			"?token=" + token + "?username=" + gstrUsername
-	}*/
-	//fmt.Fprintln(w, url)
+			"?token=" + token + "&username=" + gstrUsername
+		go dl(url, entrypoint, reqJson)
+	}
+
+	log.Println(strret)
+	msgret := ds.MsgResp{Msg: strret}
+	resp, _ := json.Marshal(msgret)
+	w.WriteHeader(http.StatusOK)
+	w.Write(resp)
+
 	/*
 		url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
 
@@ -65,10 +70,10 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 				"?token=" + token + "?username=" + gstrUsername
 		}
 		//fmt.Fprintln(w, url)
+
+		//url := "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
+		//entrypoint := ""
 	*/
-	url := "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
-	entrypoint := ""
-	go dl(url, entrypoint, reqJson)
 	return
 
 }
@@ -167,7 +172,7 @@ func download(url string, p ds.DsPull) (int64, error) {
 	return n, nil
 }
 
-func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string, err error) {
+func getAccessToken(url string /*, w http.ResponseWriter*/) (token, entrypoint string, err error) {
 	//log.Println("can't get access token,direct download..")
 	//return nil
 
@@ -187,19 +192,20 @@ func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(resp.StatusCode, string(body))
 	if resp.StatusCode != 200 {
-		w.WriteHeader(resp.StatusCode)
-		body, _ := ioutil.ReadAll(resp.Body)
-		w.Write(body)
+		/*
+			w.WriteHeader(resp.StatusCode)
+			w.Write(body)
+		*/
 		return "", "", errors.New(string(body))
 	} else {
-		body, _ := ioutil.ReadAll(resp.Body)
 
 		t := AccessToken{}
-		if err = json.Unmarshal(body, &t); err != nil {
+		result := &ds.Result{Data: &t}
+		if err = json.Unmarshal(body, result); err != nil {
 			return "", "", err
 		} else {
 			if len(t.Accesstoken) > 0 {
-				w.WriteHeader(http.StatusOK)
+				//w.WriteHeader(http.StatusOK)
 				return t.Accesstoken, t.Entrypoint, nil
 			}
 

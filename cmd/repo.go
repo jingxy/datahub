@@ -99,7 +99,7 @@ func repoUsage() {
 
 func repoResp(icmd int, respbody []byte, repo, item, tag string) {
 	//fmt.Println(string(respbody))
-	result := Result{Code: ResultOK}
+	result := ds.Result{Code: ResultOK}
 	if icmd == Repos {
 		repos := []ds.Repositories{}
 		result.Data = &repos
