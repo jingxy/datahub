@@ -64,10 +64,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		token := &tk{}
 		if err = json.Unmarshal(body, token); err != nil {
-			panic(err)
-			w.WriteHeader(resp.StatusCode)
+			log.Println(err)
+			//w.WriteHeader(resp.StatusCode)
+			w.WriteHeader(http.StatusServiceUnavailable)
 			w.Write(body)
-			fmt.Println(resp.StatusCode, string(body))
+			log.Println(resp.StatusCode, string(body))
 			return
 		} else {
 			loginAuthStr = "Token " + token.Token

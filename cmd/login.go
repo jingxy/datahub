@@ -41,7 +41,7 @@ func Login(login bool, args []string) (err error) {
 	resp, err := commToDaemon("get", "/users/auth", jsondata) //users/auth
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 	defer resp.Body.Close()
 	//fmt.Println("login return", resp.StatusCode)
