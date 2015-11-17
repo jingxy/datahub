@@ -67,7 +67,7 @@ func subsResp(detail bool, respbody []byte, repoitem string) {
 		}
 		n, _ := fmt.Printf("%s\t%s\n", "REPOSITORY/ITEM[:TAG]", "UPDATETIME")
 		printDash(n + 12)
-		for _, tag := range subs.Tags {
+		for _, tag := range subs.Taglist {
 			fmt.Printf("%s:%-8s\t%s\n", repoitem, tag.Tag, tag.Optime)
 		}
 	} else {
@@ -80,7 +80,7 @@ func subsResp(detail bool, respbody []byte, repoitem string) {
 		n, _ := fmt.Printf("%s/%-8s\t%s\n", "REPOSITORY", "ITEM", "TYPE")
 		printDash(n + 5)
 		for _, item := range subs {
-			fmt.Printf("%s/%-8s\t%s\n", item.Repository_name, item.Dataitem_name, "File")
+			fmt.Printf("%s/%-8s\t%s\n", item.Repository_name, item.Dataitem_name, "file")
 		}
 
 	}

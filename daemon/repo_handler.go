@@ -21,5 +21,12 @@ func repoDetailHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	commToServer("get", r.URL.Path, reqBody, w)
 
 	return
+}
 
+func repoRepoNameHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	log.Println(r.URL.Path, "(repodetail)")
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	commToServer("get", r.URL.Path+"?items=1", reqBody, w)
+
+	return
 }

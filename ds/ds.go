@@ -72,6 +72,7 @@ type Tag struct {
 	Tag         string `json:"tag,omitempty"`
 	Filename    string `json:"filename,omitempty"`
 	Optime      string `json:"optime,omitempty"`
+	Comment     string `json:"comment,omitempty"`
 }
 
 type Data struct {
@@ -79,7 +80,17 @@ type Data struct {
 	Dataitem_name   string `json:"itemname,omitempty"`
 	//Usage *DataItemUsage `json:"statis,omitempty"`
 	Tagsnum int   `json:"tags",omitempty`
-	Tags    []Tag `json:"Tags,omitempty"`
+	Taglist []Tag `json:"taglist,omitempty"`
+}
+
+type Repositories struct {
+	RepositoryName string `json:"repname,omitempty"`
+	Comment        string `json:"comment,omitempty"`
+	Optime         string `json:"optime,omitempty"`
+}
+
+type Repository struct {
+	DataItems []string `json:"dataitems, omitempty"`
 }
 
 /*

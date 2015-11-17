@@ -2,36 +2,83 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
 	"io/ioutil"
+	"net/url"
 	"os"
+	"strings"
+)
+
+const (
+	Repos = iota
+	ReposReponame
+	ReposReponameDataItem
+	ReposReponameDataItemTag
 )
 
 func Repo(login bool, args []string) (err error) {
-
-	itemDetail := false
+	var icmd int
 	if len(args) > 1 {
 		fmt.Println("invalid argument..")
 		repoUsage()
 		return
 	}
+	var repo, item, tag, uri string
+	if len(args) == 0 {
+		uri = "/repositories"
+		icmd = Repos
+	} else {
+		u, err := url.Parse(args[0])
+		if err != nil {
+			panic(err)
+		}
+		source := u.Path
+		if u.Path[0] == '/' {
+			source = u.Path[1:]
+		}
 
-	uri := "/repositories"
-	if len(args) == 1 {
-		uri = uri + "/" + args[0]
-		itemDetail = true
+		urls := strings.Split(source, "/")
+		lenth := len(urls)
+		//fmt.Println(lenth, urls)
+		if lenth == 0 {
+			uri = "/repositories"
+			icmd = Repos
+			//fmt.Println(uri, icmd)
+		} else if lenth == 1 || (lenth == 2 && len(urls[1]) == 0) {
+			uri = "/repositories/" + urls[0]
+			icmd = ReposReponame
+			repo = urls[0]
+			//fmt.Println(uri, icmd)
+		} else if lenth == 2 || (lenth == 3 && len(urls[2]) == 0) {
+			target := strings.Split(urls[1], ":")
+			tarlen := len(target)
+			if tarlen == 1 || (tarlen == 2 && len(target[1]) == 0) {
+				uri = "/repositories/" + urls[0] + "/" + target[0]
+				icmd = ReposReponameDataItem
+				repo = urls[0]
+				item = target[0]
+				//fmt.Println(uri, icmd)
+			} else if tarlen == 2 {
+				uri = "/repositories/" + urls[0] + "/" + target[0] + "/" + target[1]
+				icmd = ReposReponameDataItemTag
+				repo = urls[0]
+				item = target[0]
+				tag = target[1]
+				//fmt.Println(uri, icmd)
+			}
+		} else {
+			fmt.Println("The parameter after repo is in wrong format!")
+			return errors.New("The parameter after repo is in wrong format!")
+		}
 	}
-
+	fmt.Println(uri)
 	resp, err := commToDaemon("get", uri, nil)
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
-		if len(args) == 1 {
-			repoResp(itemDetail, body, args[0])
-		} else {
-			repoResp(itemDetail, body, "")
-		}
+		repoResp(icmd, body, repo, item, tag)
 	} else if resp.StatusCode == 401 {
 		//fmt.Println(resp.StatusCode, "returned....")
 		if err := Login(false, nil); err == nil {
@@ -50,35 +97,55 @@ func repoUsage() {
 	fmt.Printf("usage: %s repo [[URL]/[REPO]/[ITEM]\n", os.Args[0])
 }
 
-func repoResp(detail bool, respbody []byte, repoitem string) {
+func repoResp(icmd int, respbody []byte, repo, item, tag string) {
 	//fmt.Println(string(respbody))
-
-	if detail {
-		subs := ds.Data{}
-		result := &Result{Data: &subs}
+	result := Result{Code: ResultOK}
+	if icmd == Repos {
+		repos := []ds.Repositories{}
+		result.Data = &repos
 		err := json.Unmarshal(respbody, &result)
 		if err != nil {
 			panic(err)
 		}
-		n, _ := fmt.Printf("%s\t%s\n", "REPOSITORY/ITEM[:TAG]", "UPDATETIME")
+		n, _ := fmt.Printf("%-16s\t%-16s\t%-16s\n", "REPOSITORY", "UPDATETIME", "COMMENT")
 		printDash(n + 12)
-		for _, tag := range subs.Tags {
-			fmt.Printf("%s:%-8s\t%s\n", repoitem, tag.Tag, tag.Optime)
+		for _, v := range repos {
+			fmt.Printf("%-16s\t%-16s\t%-16s\n", v.RepositoryName, v.Optime, v.Comment)
 		}
-	} else {
-		subs := []ds.Data{}
-		result := &Result{Data: &subs}
+	} else if icmd == ReposReponame {
+		onerepo := ds.Repository{}
+		result.Data = &onerepo
 		err := json.Unmarshal(respbody, &result)
 		if err != nil {
 			panic(err)
 		}
-		n, _ := fmt.Printf("%s/%-8s\t%s\n", "REPOSITORY", "ITEM", "TYPE")
-		printDash(n + 5)
-
-		for _, item := range subs {
-			fmt.Printf("%s/%-8s\t%s\n", item.Repository_name, item.Dataitem_name, "File")
+		n, _ := fmt.Printf("REPOSITORY/DATAITEM\n")
+		printDash(n + 12)
+		for _, v := range onerepo.DataItems {
+			fmt.Printf("%s/%s\n", repo, v)
 		}
 
+	} else if icmd == ReposReponameDataItem {
+		repoitemtags := ds.Data{}
+		result.Data = &repoitemtags
+		err := json.Unmarshal(respbody, &result)
+		if err != nil {
+			panic(err)
+		}
+		n, _ := fmt.Printf("%s\t%s\n", "REPOSITORY/ITEM:TAG", "UPDATETIME")
+		printDash(n + 12)
+		for _, v := range repoitemtags.Taglist {
+			fmt.Printf("%s/%s:%s\t%s\n", repo, item, v.Tag, v.Optime)
+		}
+	} else if icmd == ReposReponameDataItemTag {
+		onetag := ds.Tag{}
+		result.Data = &onetag
+		err := json.Unmarshal(respbody, &result)
+		if err != nil {
+			panic(err)
+		}
+		n, _ := fmt.Printf("%s\t%s\t%s\n", "REPOSITORY/ITEM:TAG", "UPDATETIME", "COMMENT")
+		printDash(n + 12)
+		fmt.Printf("%s/%s:%s\t%s\t%s\n", repo, item, tag, onetag.Optime, onetag.Comment)
 	}
-
 }

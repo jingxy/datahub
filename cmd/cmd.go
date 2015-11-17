@@ -44,7 +44,7 @@ type MsgResp struct {
 }
 
 const (
-	ResultOK         = 100
+	ResultOK         = 0
 	ErrorInvalidPara = iota + 4000
 	ErrorNoRecord
 	ErrorSqlExec
