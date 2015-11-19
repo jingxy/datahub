@@ -32,8 +32,6 @@ func flagParse() {
 		os.Exit(0)
 	}
 
-	fmt.Println("token:", *flToken)
-
 	if len(*flToken) == 40 {
 		daemonigo.Token = *flToken
 		daemon.DaemonID = *flToken
