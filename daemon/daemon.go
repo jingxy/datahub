@@ -165,6 +165,14 @@ func RunDaemon() {
 
 	dbinit()
 
+	if len(DaemonID) == 40 {
+		log.Println("daemonid", DaemonID)
+		saveDaemonID(DaemonID)
+	} else {
+		log.Println("get daemonid from db")
+		DaemonID = getdaemonid()
+	}
+
 	os.Chdir(g_strDpPath)
 	originalListener, err := net.Listen("unix", cmd.UnixSock)
 	if err != nil {
@@ -214,6 +222,7 @@ func RunDaemon() {
 		defer wg.Done()
 		http.ListenAndServe(":35800", P2pRouter)
 	}()
+	go HeartBeat()
 
 	log.Printf("Serving HTTP\n")
 	select {
