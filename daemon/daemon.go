@@ -217,6 +217,8 @@ func RunDaemon() {
 	P2pRouter := httprouter.New()
 	P2pRouter.GET("/", sayhello)
 	P2pRouter.GET("/pull/:repo/:dataitem/:tag", p2p_pull)
+	P2pRouter.GET("/health", p2pHealthyCheckHandler)
+
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
@@ -236,6 +238,9 @@ func RunDaemon() {
 	daemonigo.UnlockPidFile()
 	g_ds.Db.Close()
 
+}
+func p2pHealthyCheckHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	rw.WriteHeader(http.StatusOK)
 }
 
 /*pull parses filename and target IP from HTTP GET method, and start downloading routine. */
