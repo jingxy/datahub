@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
 	"time"
@@ -47,6 +48,14 @@ func dbinit() {
 	g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
 	g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
 
+}
+
+func Trace() {
+	pc := make([]uintptr, 10) // at least 1 entry needed
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	file, line := f.FileLine(pc[0])
+	fmt.Printf("%s:%d %s()\n", file, line, f.Name())
 }
 
 func chk(err error) {

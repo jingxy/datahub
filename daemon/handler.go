@@ -80,7 +80,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func commToServer(method, path string, buffer []byte, w http.ResponseWriter) (resp *http.Response, err error) {
-
+	//Trace()
 	log.Println("daemon: connecting to", DefaultServer+path)
 	req, err := http.NewRequest(strings.ToUpper(method), DefaultServer+path, bytes.NewBuffer(buffer))
 	if len(loginAuthStr) > 0 {
