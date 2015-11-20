@@ -1,9 +1,9 @@
 package daemon
 
 import (
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 

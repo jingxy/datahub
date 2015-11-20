@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 )
