@@ -6,11 +6,6 @@ import (
 	"log"
 )
 
-type FormatRepoList struct {
-	RepoName string `json:"repoName"`
-	ItemID   string `json:"itemID"`
-}
-
 type DsPull struct {
 	Tag        string `json:"tag"`
 	Datapool   string `json:"datapool"`
@@ -42,34 +37,6 @@ type MsgResp struct {
 type DataItem struct {
 	Repository_name string `json:"repname,omitempty"`
 	Dataitem_name   string `json:"dataitem_name,omitempty"`
-	/*
-		User_id         int     `json:"user_id,omitempty"`
-		Dataitem_id     int64   `json:"dataitem_id,omitempty"  xorm:"dataitem_id pk autoincr"`
-		Ico_name        string  `json:"ico_name,omitempty"`
-		Permit_type     int     `json:"permit_type,omitempty"`
-		Key_words       string  `json:"key_words,omitempty"`
-		Supply_style    int     `json:"supply_style,omitempty"`
-		Priceunit_type  int     `json:"priceunit_type,omitempty"`
-		Price           float32 `json:"price,omitempty"`
-		Optime          string  `json:"optime,omitempty"`
-		Data_format     int     `json:"data_format,omitempty"`
-		Refresh_type    string  `json:"refresh_type,omitempty"`
-		Refresh_num     int     `json:"refresh_num,omitempty"`
-		Meta_filename   string  `json:"meta_filename,omitempty"`
-		Sample_filename string  `json:"sample_filename,omitempty"`
-		Comment         string  `json:"comment,omitempty"`
-	*/
-}
-
-type DataItemUsage struct {
-	Dataitem_id   int64  `json:"dataitem_id,omitempty"  xorm:"dataitem_id pk autoincr"`
-	Dataitem_name string `json:"dataitem_name,omitempty"`
-	Views         int    `json:"views"`
-	Follows       int    `json:"follows"`
-	//	Downloads     int    `json:"downloads"`
-	Stars        int    `json:"stars"`
-	Refresh_date string `json:"refresh_date,omitempty"`
-	Usability    int    `json:"usability,omitempty"`
 }
 
 type Tag struct {
@@ -98,13 +65,13 @@ type Repository struct {
 	DataItems []string `json:"dataitems, omitempty"`
 }
 
-/*
-type ItemDetail struct {
-	Item  *DataItem      `json:"item,omitempty"`
-	Usage *DataItemUsage `json:"statis,omitempty"`
-	Tags  []Tag          `json:"tags,omitempty"`
+type PubPara struct {
+	Datapool   string `json:"datapool, omitempty"`
+	Detail     string `json:"detail, omitempty"`
+	Accesstype string `json:"itemaccesstype, omitempty"`
+	Comment    string `json:"comment, omitempty"`
 }
-*/
+
 type Ds struct {
 	Db *sql.DB
 }
@@ -132,9 +99,9 @@ const Create_dh_dp_repo_ditem_map string = `CREATE TABLE IF NOT EXISTS
 
 //DH_DP_REPO_DITEM_MAP  PUBLISH: 'Y' the dataitem is published by you,
 //'N' the dataitem is pulled by you
-
+//TAGID        INTEGER PRIMARY KEY AUTOINCREMENT,
 const Create_dh_repo_ditem_tag_map string = `CREATE TABLE IF NOT EXISTS 
-    DH_RPDM_TAG_MAP ( 
+    DH_RPDM_TAG_MAP (  
         TAGNAME      VARCHAR(128),
         RPDMID       INTEGER,
         DETAIL       VARCHAR(128),

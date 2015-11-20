@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"errors"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
 )
@@ -72,7 +73,7 @@ func InsertTagToDb(dpexist bool, p ds.DsPull) (err error) {
 		VALUES ('%s', '%d', '%s', datetime('now'))`,
 		p.Tag, rpdmid, p.DestName)
 	fmt.Println(sqlInsertTag)
-	g_ds.Insert(sqlInsertTag)
+	_, err = g_ds.Insert(sqlInsertTag)
 	return err
 }
 
@@ -87,4 +88,92 @@ func GetRepoItemId(repository, dataitem string) (rpdmid int) {
 		row.Scan(&rpdmid)
 		return
 	}
+}
+
+func InsertItemToDb(repo, item, datapool string) (err error) {
+	dpid := GetDataPoolDpid(datapool)
+	if dpid > 0 {
+		sqlInsertItem := fmt.Sprintf(`INSERT INTO DH_DP_RPDM_MAP (RPDMID, REPOSITORY, DATAITEM, DPID, PUBLISH, CREATE_TIME)
+			VALUES (null, '%s', '%s', %d, 'Y',  datetime('now'))`, repo, item, dpid)
+		_, err = g_ds.Insert(sqlInsertItem)
+
+	} else {
+		err = errors.New("dpid is not found")
+	}
+	return err
+}
+
+func GetDataPoolStatusByID(dpid int) (status string) {
+	sqlGetDpStatus := fmt.Sprintf("SELECT STATUS FROM DH_DP WHRERE DPID=%d", dpid)
+	row, err := g_ds.QueryRow(sqlGetDpStatus)
+	if err != nil {
+		return
+	}
+	row.Scan(&status)
+	return
+}
+
+func GetRpdmIdAndDpId(repo, item string) (rpdmid, dpid int) {
+	sqlGetRpdmIdAndDpId := fmt.Sprintf("SELECT RPDMID, DPID FROM DH_DP_RPDM_MAP WHERE REPOSITORY='%s' AND DATAITEM='%s'", repo, item)
+	row, err := g_ds.QueryRow(sqlGetRpdmIdAndDpId)
+	if err != nil {
+		return
+	}
+	row.Scan(&rpdmid, &dpid)
+	status := GetDataPoolStatusByID(dpid)
+	if status != "A" {
+		return 0, 0
+	}
+	return
+}
+
+func CheckTagExist(repo, item, tag string) (exits bool, err error) {
+	rpdmid, dpid := GetRpdmIdAndDpId(repo, item)
+	if rpdmid == 0 || dpid == 0 {
+		return false, errors.New("repo and dataitem not exist")
+	}
+	sqlCheckTag := fmt.Sprintf("SELECT COUNT(1) FROM DH_RPDM_TAG_MAP WHERE RPDMID='%d' AND TAGNAME='%s'", rpdmid, tag)
+	row, err := g_ds.QueryRow(sqlCheckTag)
+	var count int
+	row.Scan(&count)
+	if count > 0 {
+		return true, nil
+	}
+	return
+}
+
+func GetDpNameAndDpConn(repo, item, tag string) (dpname, dpconn string) {
+	_, dpid := GetRpdmIdAndDpId(repo, item)
+	if dpid == 0 {
+		return "", ""
+	}
+	dpname, dpconn = GetDpnameDpconnByDpidAndStatus(dpid, "A")
+	return
+}
+
+func GetDpnameDpconnByDpidAndStatus(dpid int, status string) (dpname, dpconn string) {
+	sqlgetdpconn := fmt.Sprintf("SELECT DPNAME ,DPCONN FROM DH_DP WHERE DPID='%d'  AND STATUS='%S'", dpid, status)
+	//fmt.Println(sqlgetdpconn)
+	row, err := g_ds.QueryRow(sqlgetdpconn)
+	if err != nil {
+		fmt.Println("GetDpnameDpconnByDpidAndStatus QueryRow error:", err.Error())
+		return
+	} else {
+		row.Scan(&dpname, &dpconn)
+		return
+	}
+}
+
+func InsertPubTagToDb(repo, item, tag, FileName string) (err error) {
+	rpdmid := GetRepoItemId(repo, item)
+	if rpdmid == 0 {
+		return errors.New("Dataitem is not found which need to be published before publishing tag. ")
+	}
+	sqlInsertTag := fmt.Sprintf("INSERT INTO DH_RPDM_TAG_MAP (TAGNAME, RPDMID, DETAIL, CREATE_TIME) VALUES ('%s', %d, '%s', datetime('now'))",
+		tag, rpdmid, FileName)
+	_, err = g_ds.Insert(sqlInsertTag)
+	if err != nil {
+		return err
+	}
+	return
 }

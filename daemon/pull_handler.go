@@ -190,7 +190,7 @@ func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(resp.StatusCode, string(body))
+	log.Println(resp.StatusCode, string(body))
 	if resp.StatusCode != 200 {
 
 		w.WriteHeader(resp.StatusCode)

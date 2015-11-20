@@ -42,6 +42,12 @@ const (
 	ErrorInvalidPara = iota + 4000
 	ErrorNoRecord
 	ErrorSqlExec
+	ErrorInsertItem
+	ErrorUnmarshal
+	ErrorMarshal
+	ErrorServiceUnavailable
+	ErrorFileNotExist
+	ErrorTagAlreadyExist
 )
 
 var Cmd = []Command{
@@ -61,9 +67,25 @@ var Cmd = []Command{
 		Desc: "list all of datapools.",
 	},
 	{
-		Name:      "repo",
-		Handler:   Repo,
+		Name:    "repo",
+		Handler: Repo,
+		/*SubCmd: []Command{
+			{
+				Name:    "create",
+				Handler: RepoCreate,
+			},
+			{
+				Name:    "rm",
+				Handler: RepoRm,
+			},
+		},*/
 		Desc:      "Repostories mangement",
+		NeedLogin: true,
+	},
+	{
+		Name:      "pub",
+		Handler:   Pub,
+		Desc:      "publish item or tag.",
 		NeedLogin: true,
 	},
 	{
