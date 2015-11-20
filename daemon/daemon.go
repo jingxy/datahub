@@ -8,9 +8,9 @@ import (
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/daemon/daemonigo"
 	"github.com/asiainfoLDP/datahub/ds"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -160,7 +160,7 @@ func RunDaemon() {
 	case !isDaemon:
 		return
 	case err != nil:
-		log.Fatalf("main(): could not start daemon, reason -> %s", err.Error())
+		log.Fatal("main(): could not start daemon, reason -> %s", err.Error())
 	}
 	//fmt.Printf("server := http.Server{}\n")
 
