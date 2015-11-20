@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strings"
 )
 
 var (
@@ -26,35 +27,38 @@ func trace() string {
 	runtime.Callers(2, pc)
 	f := runtime.FuncForPC(pc[1]).Name()
 
-	return fmt.Sprintf("%s() ", f)
+	fName := strings.Split(f, "/")[strings.Count(f, "/")]
+
+	//return fmt.Sprintf("%s() ", f)
+	return fName + "() "
 }
 
 func Error(format string, a ...interface{}) {
-	log.Printf(fmt.Sprintf(KRED+"[ERROR] "+KNRM+trace()+format, a...))
+	log.Println(KRED+"[ERROR] "+KNRM+trace(), fmt.Sprintf(format, a...))
 }
 func Fatal(format string, a ...interface{}) {
-	log.Printf(fmt.Sprintf(KRED+KBLD+"[FATAL] "+KNRM+trace()+format, a...))
+	log.Println(KRED+KBLD+"[FATAL] "+KNRM+trace(), fmt.Sprintf(format, a...))
 	os.Exit(1)
 }
 
 func Info(format string, a ...interface{}) {
-	log.Printf(fmt.Sprintf(KGRN+"[INFO] "+KNRM+trace()+format, a...))
+	log.Println(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
 }
 
 func Debug(format string, a ...interface{}) {
-	log.Printf(fmt.Sprintf(KBLU+"[DEBUG] "+KNRM+trace()+format, a...))
+	log.Println(KBLU+"[DEBUG] "+KNRM+trace(), fmt.Sprintf(format, a...))
 }
 
 func Warn(format string, a ...interface{}) {
-	log.Printf(fmt.Sprintf(KYEL+"[WARNING] "+KNRM+trace()+format, a...))
+	log.Println(KYEL+"[WARNING] "+KNRM+trace(), fmt.Sprintf(format, a...))
 }
 
 func Printf(format string, a ...interface{}) {
-	log.Printf(fmt.Sprintf(KGRN+"[INFO] "+KNRM+trace()+format, a...))
+	log.Println(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
 }
 
 func Println(a ...interface{}) {
-	log.Printf(fmt.Sprintf(KGRN+"[INFO] "+KNRM+trace()+"%s", a...))
+	log.Printf(KGRN+"[INFO] "+KNRM+trace()+"%s", fmt.Sprintln(a...))
 }
 
 /*
