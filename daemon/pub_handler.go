@@ -16,9 +16,16 @@ import (
 	"strings"
 )
 
+type Sys struct {
+	Supplystyle string `json:"supply_style"`
+}
+type Label struct {
+	Ssys Sys `json:"sys"`
+}
 type ic struct {
-	AccessType string `json:"itemaccesstpye"`
+	AccessType string `json:"itemaccesstype"`
 	Comment    string `json:"comment"`
+	Slabel     Label  `json:"label"`
 }
 
 func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -37,6 +44,9 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	}
 
 	icpub := ic{AccessType: pub.Accesstype, Comment: pub.Comment}
+	isys := Sys{Supplystyle: "batch"}
+	icpub.Slabel = Label{Ssys: isys}
+
 	body, err := json.Marshal(icpub)
 	if err != nil {
 		s := "pub dataitem error while marshal icpub struct"
@@ -44,6 +54,7 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorMarshal, s)
 		return
 	}
+	log.Println(string(body))
 
 	log.Println("daemon: connecting to", DefaultServer+r.URL.Path)
 	req, err := http.NewRequest("POST", DefaultServer+r.URL.Path, bytes.NewBuffer(body))
@@ -61,14 +72,7 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 
 	//Get server result
 	rbody, _ := ioutil.ReadAll(resp.Body)
-	result := ds.Result{}
-	err = json.Unmarshal(rbody, &result)
-	if err != nil {
-		s := "pub dataitem error while unmarshal server response"
-		log.Println(s)
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, s)
-		return
-	}
+	log.Println(resp.StatusCode, string(rbody))
 
 	repo := ps.ByName("repo")
 	item := ps.ByName("item")
@@ -90,10 +94,18 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 			}
 		}
 	} else {
+
+		result := ds.Result{}
+		err = json.Unmarshal(rbody, &result)
+		if err != nil {
+			s := "pub dataitem error while unmarshal server response"
+			log.Println(s)
+			WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, s)
+			return
+		}
+		log.Println(resp.StatusCode, result.Msg)
 		WriteHttpResultWithoutData(w, resp.StatusCode, result.Code, result.Msg)
 	}
-
-	log.Println(resp.StatusCode, result.Msg)
 
 	return
 
@@ -146,7 +158,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}{
 		pub.Comment})
 	if err != nil {
-		s := "pub dataitem error while marshal struct"
+		s := "pub tag error while marshal struct"
 		log.Println(s)
 		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorMarshal, s)
 		return
@@ -168,14 +180,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 	//Get server result
 	rbody, _ := ioutil.ReadAll(resp.Body)
-	result := ds.Result{}
-	err = json.Unmarshal(rbody, &result)
-	if err != nil {
-		s := "pub dataitem error while unmarshal server response"
-		log.Println(s)
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, s)
-		return
-	}
+	log.Println(resp.StatusCode, string(rbody))
 
 	if resp.StatusCode == 200 {
 		if NeedCopy {
@@ -197,10 +202,18 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 			WriteHttpResultWithoutData(w, http.StatusOK, cmd.ResultOK, "OK")
 		}
 	} else {
+
+		result := ds.Result{}
+		err = json.Unmarshal(rbody, &result)
+		if err != nil {
+			s := "pub dataitem error while unmarshal server response"
+			log.Println(s)
+			WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, s)
+			return
+		}
+		log.Println(resp.StatusCode, result.Msg)
 		WriteHttpResultWithoutData(w, resp.StatusCode, result.Code, result.Msg)
 	}
-
-	log.Println(resp.StatusCode, result.Msg)
 
 	return
 

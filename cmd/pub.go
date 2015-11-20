@@ -147,7 +147,7 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 			fmt.Println("PubItem error .")
 			return err
 		} else {
-			fmt.Println("Error code: ", result.Code, " Msg: ", result.Msg)
+			fmt.Println("Error code: ", resp.StatusCode, "  ", result.Code, " Msg: ", result.Msg)
 		}
 	}
 	return err

@@ -10,7 +10,7 @@ import (
 func repoHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	log.Println(r.URL.Path, "(repo)")
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	commToServer("get", r.URL.Path+"?size=-1", reqBody, w)
+	commToServer("get", r.URL.Path+"?size=10", reqBody, w)
 
 	return
 
