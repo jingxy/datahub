@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"io/ioutil"
+	"log"
+	"path/filepath"
 	"strings"
 )
 
@@ -47,6 +49,14 @@ func DpCreate(needLogin bool, args []string) (err error) {
 	if dptype != "file" && dptype != "db" && dptype != "hadoop" && dptype != "api" && dptype != "storm" {
 		fmt.Println("Datapool type need to be :file,db,hadoop,api,storm")
 		return
+	}
+
+	if d.Conn[0] != '/' {
+		d.Conn, err = filepath.Abs(d.Conn)
+		if err != nil {
+			log.Print(err.Error())
+			return err
+		}
 	}
 
 	jsonData, err := json.Marshal(d)

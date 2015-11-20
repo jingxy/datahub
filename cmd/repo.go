@@ -85,7 +85,7 @@ func Repo(login bool, args []string) (err error) {
 		if err != nil {
 			panic(err)
 		}
-		if result.Code != 1016 {
+		if result.Code != 1400 {
 			fmt.Println(result.Msg)
 			return nil
 		}
