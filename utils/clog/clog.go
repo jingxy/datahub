@@ -33,33 +33,64 @@ func trace() string {
 	return fName + "() "
 }
 
-func Error(format string, a ...interface{}) {
-	log.Println(KRED+"[ERROR] "+KNRM+trace(), fmt.Sprintf(format, a...))
+func Error(a ...interface{}) {
+	log.Print(KRED+"[ERROR] "+KNRM+trace(), fmt.Sprintln(a...))
 }
-func Fatal(format string, a ...interface{}) {
-	log.Println(KRED+KBLD+"[FATAL] "+KNRM+trace(), fmt.Sprintf(format, a...))
+
+func Errorf(format string, a ...interface{}) {
+	log.Print(KRED+"[ERROR] "+KNRM+trace(), fmt.Sprintf(format, a...))
+}
+
+func Fatal(a ...interface{}) {
+	log.Print(KRED+KBLD+"[FATAL] "+KNRM+trace(), fmt.Sprintln(a...))
 	os.Exit(1)
 }
 
-func Info(format string, a ...interface{}) {
-	log.Println(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
+func Fatalf(format string, a ...interface{}) {
+	log.Print(KRED+KBLD+"[FATAL] "+KNRM+trace(), fmt.Sprintf(format, a...))
+	os.Exit(1)
 }
 
-func Debug(format string, a ...interface{}) {
-	log.Println(KBLU+"[DEBUG] "+KNRM+trace(), fmt.Sprintf(format, a...))
+func Info(a ...interface{}) {
+	log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintln(a...))
 }
 
-func Warn(format string, a ...interface{}) {
-	log.Println(KYEL+"[WARNING] "+KNRM+trace(), fmt.Sprintf(format, a...))
+func Infof(format string, a ...interface{}) {
+	log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
 }
 
-func Printf(format string, a ...interface{}) {
-	log.Println(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
+func Trace(a ...interface{}) {
+	log.Print(KWHT+"[TRACE] "+KNRM+trace(), fmt.Sprintln(a...))
+}
+
+func Tracef(format string, a ...interface{}) {
+	log.Print(KWHT+"[TRACE] "+KNRM+trace(), fmt.Sprintf(format, a...))
+}
+func Debug(a ...interface{}) {
+	log.Print(KBLU+"[DEBUG] "+KNRM+trace(), fmt.Sprintln(a...))
+}
+
+func Debugf(format string, a ...interface{}) {
+	log.Print(KBLU+"[DEBUG] "+KNRM+trace(), fmt.Sprintf(format, a...))
+}
+
+func Warn(a ...interface{}) {
+	log.Print(KYEL+"[WARNING] "+KNRM+trace(), fmt.Sprintln(a...))
+}
+
+
+func Warnf(format string, a ...interface{}) {
+	log.Print(KYEL+"[WARNING] "+KNRM+trace(), fmt.Sprintf(format, a...))
 }
 
 func Println(a ...interface{}) {
-	log.Printf(KGRN+"[INFO] "+KNRM+trace()+"%s", fmt.Sprintln(a...))
+	log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintln(a...))
 }
+
+func Printf(format string, a ...interface{}) {
+	log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
+}
+
 
 /*
 func test() {

@@ -36,7 +36,7 @@ func HeartBeat() {
 		*/
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Error(err.Error())
 			time.Sleep(10 * time.Second)
 			continue
 		}
