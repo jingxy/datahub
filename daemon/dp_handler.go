@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -62,6 +63,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				msg.Msg = err.Error()
 			} else {
 				msg.Msg = fmt.Sprintf("OK. dp:%s total path:%s", reqJson.Name, sdpDirName)
+				reqJson.Conn = strings.TrimRight(reqJson.Conn, "/")
 				sql_dp_insert := fmt.Sprintf(`insert into DH_DP (DPID, DPNAME, DPTYPE, DPCONN, STATUS)
 					values (null, '%s', '%s', '%s', 'A')`, reqJson.Name, reqJson.Type, reqJson.Conn)
 				if _, err := g_ds.Insert(sql_dp_insert); err != nil {

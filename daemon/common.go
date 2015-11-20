@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
+	"log"
 )
 
 func CheckDataPoolExist(datapoolname string) (bexist bool) {
@@ -104,12 +105,15 @@ func InsertItemToDb(repo, item, datapool string) (err error) {
 }
 
 func GetDataPoolStatusByID(dpid int) (status string) {
-	sqlGetDpStatus := fmt.Sprintf("SELECT STATUS FROM DH_DP WHRERE DPID=%d", dpid)
+	sqlGetDpStatus := fmt.Sprintf("SELECT STATUS FROM DH_DP WHERE DPID=%d", dpid)
+	fmt.Println(sqlGetDpStatus)
 	row, err := g_ds.QueryRow(sqlGetDpStatus)
 	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 	row.Scan(&status)
+	log.Println("GetDataPoolStatusByID status:", status)
 	return
 }
 
@@ -117,19 +121,24 @@ func GetRpdmIdAndDpId(repo, item string) (rpdmid, dpid int) {
 	sqlGetRpdmIdAndDpId := fmt.Sprintf("SELECT RPDMID, DPID FROM DH_DP_RPDM_MAP WHERE REPOSITORY='%s' AND DATAITEM='%s'", repo, item)
 	row, err := g_ds.QueryRow(sqlGetRpdmIdAndDpId)
 	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 	row.Scan(&rpdmid, &dpid)
 	status := GetDataPoolStatusByID(dpid)
+	fmt.Println("GetRpdmIdAndDpId rpdmid, dpid ", rpdmid, dpid)
+	fmt.Println("status:", status)
 	if status != "A" {
 		return 0, 0
 	}
+
 	return
 }
 
 func CheckTagExist(repo, item, tag string) (exits bool, err error) {
 	rpdmid, dpid := GetRpdmIdAndDpId(repo, item)
 	if rpdmid == 0 || dpid == 0 {
+		fmt.Println("rpdmid, dpid ", rpdmid, dpid)
 		return false, errors.New("repo and dataitem not exist")
 	}
 	sqlCheckTag := fmt.Sprintf("SELECT COUNT(1) FROM DH_RPDM_TAG_MAP WHERE RPDMID='%d' AND TAGNAME='%s'", rpdmid, tag)
@@ -145,6 +154,7 @@ func CheckTagExist(repo, item, tag string) (exits bool, err error) {
 func GetDpNameAndDpConn(repo, item, tag string) (dpname, dpconn string) {
 	_, dpid := GetRpdmIdAndDpId(repo, item)
 	if dpid == 0 {
+		fmt.Println("GetDpNameAndDpConn dpid==0")
 		return "", ""
 	}
 	dpname, dpconn = GetDpnameDpconnByDpidAndStatus(dpid, "A")
@@ -152,7 +162,7 @@ func GetDpNameAndDpConn(repo, item, tag string) (dpname, dpconn string) {
 }
 
 func GetDpnameDpconnByDpidAndStatus(dpid int, status string) (dpname, dpconn string) {
-	sqlgetdpconn := fmt.Sprintf("SELECT DPNAME ,DPCONN FROM DH_DP WHERE DPID='%d'  AND STATUS='%S'", dpid, status)
+	sqlgetdpconn := fmt.Sprintf("SELECT DPNAME ,DPCONN FROM DH_DP WHERE DPID='%d'  AND STATUS='%s'", dpid, status)
 	//fmt.Println(sqlgetdpconn)
 	row, err := g_ds.QueryRow(sqlgetdpconn)
 	if err != nil {
@@ -162,6 +172,7 @@ func GetDpnameDpconnByDpidAndStatus(dpid int, status string) (dpname, dpconn str
 		row.Scan(&dpname, &dpconn)
 		return
 	}
+	return
 }
 
 func InsertPubTagToDb(repo, item, tag, FileName string) (err error) {
