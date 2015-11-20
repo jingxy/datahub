@@ -44,7 +44,7 @@ func HeartBeat() {
 		defer resp.Body.Close()
 
 		body, _ := ioutil.ReadAll(resp.Body)
-		log.Printf("HeartBeat http statuscode:%v,  http body:%s\n", resp.StatusCode, body)
+		log.Printf("HeartBeat http statuscode:%v,  http body:%s", resp.StatusCode, body)
 
 		time.Sleep(30 * time.Second)
 	}
