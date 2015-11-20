@@ -8,13 +8,14 @@ import (
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/daemon/daemonigo"
 	"github.com/asiainfoLDP/datahub/ds"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
 	"time"
@@ -47,6 +48,14 @@ func dbinit() {
 	g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
 	g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
 
+}
+
+func Trace() {
+	pc := make([]uintptr, 10) // at least 1 entry needed
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	file, line := f.FileLine(pc[0])
+	fmt.Printf("%s:%d %s()\n", file, line, f.Name())
 }
 
 func chk(err error) {
@@ -151,7 +160,7 @@ func RunDaemon() {
 	case !isDaemon:
 		return
 	case err != nil:
-		log.Fatalf("main(): could not start daemon, reason -> %s", err.Error())
+		log.Fatal("main(): could not start daemon, reason -> %s", err.Error())
 	}
 	//fmt.Printf("server := http.Server{}\n")
 
@@ -164,6 +173,14 @@ func RunDaemon() {
 	}
 
 	dbinit()
+
+	if len(DaemonID) == 40 {
+		log.Println("daemonid", DaemonID)
+		saveDaemonID(DaemonID)
+	} else {
+		log.Println("get daemonid from db")
+		DaemonID = getdaemonid()
+	}
 
 	os.Chdir(g_strDpPath)
 	originalListener, err := net.Listen("unix", cmd.UnixSock)
@@ -213,11 +230,14 @@ func RunDaemon() {
 	P2pRouter := httprouter.New()
 	P2pRouter.GET("/", sayhello)
 	P2pRouter.GET("/pull/:repo/:dataitem/:tag", p2p_pull)
+	P2pRouter.GET("/health", p2pHealthyCheckHandler)
+
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
 		http.ListenAndServe(":35800", P2pRouter)
 	}()
+	go HeartBeat()
 
 	log.Printf("Serving HTTP\n")
 	select {
@@ -231,6 +251,9 @@ func RunDaemon() {
 	daemonigo.UnlockPidFile()
 	g_ds.Db.Close()
 
+}
+func p2pHealthyCheckHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	rw.WriteHeader(http.StatusOK)
 }
 
 /*pull parses filename and target IP from HTTP GET method, and start downloading routine. */

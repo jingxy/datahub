@@ -27,6 +27,8 @@ var EnvVarValue = "1"
 // If not set, the current user directory will be used.
 var WorkDir = ""
 
+var Token = ""
+
 // Value of file mask for PID-file.
 var PidFileMask os.FileMode = 0644
 
@@ -222,14 +224,18 @@ func Status() (isRunning bool, pr *os.Process, e error) {
 func StartCommand() (*exec.Cmd, error) {
 	const errLoc = "daemonigo.StartCommand()"
 	path, err := filepath.Abs(os.Args[0])
-	log.Println("exec path", path)
+	log.Println("exec path", path, Token)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: failed to resolve absolute path of %s, reason -> %s",
 			errLoc, AppName, err.Error(),
 		)
 	}
+
 	cmd := exec.Command(path, "--daemon")
+	if len(Token) > 0 {
+		cmd = exec.Command(path, "--daemon", "--token", Token)
+	}
 	cmd.Env = append(
 		os.Environ(), fmt.Sprintf("%s=%s", EnvVarName, EnvVarValue),
 	)

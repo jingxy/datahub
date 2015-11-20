@@ -12,7 +12,14 @@ go get github.com/asiainfoLDP/datahub
 
 启动datahub服务:
 ```shell
-sudo $GOPATH/bin/datahub --daemon
+sudo $GOPATH/bin/datahub --daemon --token xxxxxxxxxxx
+```
+
+### Docker方式启动
+
+```shell
+docker build -t datahub .
+docker run -d -e "DAEMON_TOKEN=xxxxxxxxxxx" -e "DAEMON_ENTRYPOINT=http://XXXXXXXXXX:YYYY" -p xxxx:35800 datahub
 ```
 
 ### 运行Datahub CLI
