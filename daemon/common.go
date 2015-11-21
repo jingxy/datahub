@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
-	"log"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 )
 
 func CheckDataPoolExist(datapoolname string) (bexist bool) {
