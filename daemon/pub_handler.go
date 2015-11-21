@@ -244,6 +244,10 @@ func MkdirForDataItem(repo, item, datapool string) (err error) {
 
 func RollBackItem(repo, item string) {
 	//Delete /repository/repo/item
+	err := DeleteItemOrTag(repo, item, "")
+	if err != nil {
+		log.Println("DeleteItem err ", err.Error())
+	}
 }
 
 func CheckTagExistAndGetDestFilePath(repo, item, tag string) (filepath string, err error) {
@@ -264,7 +268,11 @@ func CheckTagExistAndGetDestFilePath(repo, item, tag string) (filepath string, e
 }
 
 func RollBackTag(repo, item, tag string) {
-	//Delete /repository/repo/item
+	//Delete /repository/repo/item tag
+	err := DeleteItemOrTag(repo, item, tag)
+	if err != nil {
+		log.Println("DeleteTag err ", err.Error())
+	}
 }
 
 func CopyFile(src, des string) (w int64, err error) {
@@ -281,4 +289,36 @@ func CopyFile(src, des string) (w int64, err error) {
 	defer desFile.Close()
 
 	return io.Copy(desFile, srcFile)
+}
+
+func DeleteItemOrTag(repo, item, tag string) (err error) {
+	uri := "/repositories/"
+	if len(tag) == 0 {
+		uri = uri + repo + "/" + item
+	} else {
+		uri = uri + repo + "/" + item + "/" + tag
+	}
+	log.Println(uri)
+	req, err := http.NewRequest("DELETE", DefaultServer+uri, nil)
+	if len(loginAuthStr) > 0 {
+		req.Header.Set("Authorization", loginAuthStr)
+	}
+	if err != nil {
+		return err
+	}
+	//req.Header.Set("User", "admin")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	} else {
+		body, _ := ioutil.ReadAll(resp.Body)
+		log.Println(resp.StatusCode, string(body))
+		return errors.New(fmt.Sprintf("%d", resp.StatusCode))
+	}
+	return err
 }

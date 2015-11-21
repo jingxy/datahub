@@ -166,7 +166,7 @@ func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 	rowdp.Scan(&dpid, &onedp.Name, &onedp.Type, &onedp.Conn)
 	if dpid > 0 {
 		//Use "left out join" to get repository/dataitem records, whether it has tags or not.
-		sqlTag := fmt.Sprintf(`SELECT A.REPOSITORY, A.DATAITEM, B.TAGNAME, strftime(B.CREATE_TIME), A.PUBLISH 
+		sqlTag := fmt.Sprintf(`SELECT A.REPOSITORY, A.DATAITEM, A.PUBLISH ,strftime(A.CREATE_TIME), B.TAGNAME, strftime(B.CREATE_TIME)
 				FROM DH_DP_RPDM_MAP A LEFT JOIN DH_RPDM_TAG_MAP B
 				ON (A.RPDMID = B.RPDMID)
 				WHERE A.DPID = %v`, dpid)
@@ -178,7 +178,12 @@ func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 		defer tagrows.Close()
 		for tagrows.Next() {
 			item := cmd.Item{}
-			tagrows.Scan(&item.Repository, &item.DataItem, &item.Tag, &item.Time, &item.Publish)
+			var repoitemtime string
+			tagrows.Scan(&item.Repository, &item.DataItem, &item.Publish, &repoitemtime, &item.Tag, &item.Time)
+			if len(item.Time) == 0 {
+				item.Time = repoitemtime
+			}
+			//log.Println(item.Repository, item.DataItem, item.Tag, item.Time, item.Publish)
 			onedp.Items = append(onedp.Items, item)
 		}
 	}
