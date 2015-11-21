@@ -130,15 +130,16 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	tag := ps.ByName("tag")
 
 	var NeedCopy bool
-	//get destfilepath and check whether repo/dataitem has been published
-	DestFilePath, err := CheckTagExistAndGetDestFilePath(repo, item, tag)
-	if err != nil || len(DestFilePath) == 0 {
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, err.Error()+"DestFilePath:"+DestFilePath)
+	//get DpFullPath and check whether repo/dataitem has been published
+	DpFullPath, err := CheckTagExistAndGetDpFullPath(repo, item, tag)
+	if err != nil || len(DpFullPath) == 0 {
+		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, err.Error()+"  Datapool Path:"+DpFullPath)
 		return
 	}
 	splits := strings.Split(pub.Detail, "/")
 	FileName := splits[len(splits)-1]
-	DestFullPathFileName := DestFilePath + "/" + repo + "/" + item + "/" + FileName
+	DestFullPath := DpFullPath + "/" + repo + "/" + item
+	DestFullPathFileName := DestFullPath + "/" + FileName
 	if len(splits) == 1 {
 		if isFileExists(DestFullPathFileName) == false {
 			WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorFileNotExist, DestFullPathFileName+" not found")
@@ -164,7 +165,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 
-	log.Println("daemon: connecting to", DefaultServer+r.URL.Path)
+	log.Println("daemon: connecting to ", DefaultServer+r.URL.Path)
 	req, err := http.NewRequest("POST", DefaultServer+r.URL.Path, bytes.NewBuffer(body))
 	if len(loginAuthStr) > 0 {
 		req.Header.Set("Authorization", loginAuthStr)
@@ -184,11 +185,14 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 	if resp.StatusCode == 200 {
 		if NeedCopy {
+			if false == isDirExists(DestFullPath) {
+				os.MkdirAll(DpFullPath, 0755)
+			}
 			count, err := CopyFile(pub.Detail, DestFullPathFileName)
 			if err != nil {
 				RollBackTag(repo, item, tag)
 				WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
-					"Copy file to datapool error, permission denied or path!")
+					fmt.Sprintf(" Copy file to datapool error, permission denied or path '%s' not exist! ", DestFullPath))
 				return
 			}
 			log.Printf("Copy %d bytes from %s to %s", count, pub.Detail, DestFullPathFileName)
@@ -250,7 +254,7 @@ func RollBackItem(repo, item string) {
 	}
 }
 
-func CheckTagExistAndGetDestFilePath(repo, item, tag string) (filepath string, err error) {
+func CheckTagExistAndGetDpFullPath(repo, item, tag string) (filepath string, err error) {
 	exist, err := CheckTagExist(repo, item, tag)
 	if err != nil {
 		return "", err

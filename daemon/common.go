@@ -12,7 +12,7 @@ func CheckDataPoolExist(datapoolname string) (bexist bool) {
 	row, err := g_ds.QueryRow(sqlcheck)
 	//fmt.Println(sqlcheck)
 	if err != nil {
-		fmt.Println("CheckDataPoolExist QueryRow error:", err.Error())
+		log.Println("CheckDataPoolExist QueryRow error:", err.Error())
 		return
 	} else {
 		var num int
@@ -31,7 +31,7 @@ func GetDataPoolDpconn(datapoolname string) (dpconn string) {
 	//fmt.Println(sqlgetdpconn)
 	row, err := g_ds.QueryRow(sqlgetdpconn)
 	if err != nil {
-		fmt.Println("GetDataPoolDpconn QueryRow error:", err.Error())
+		log.Println("GetDataPoolDpconn QueryRow error:", err.Error())
 		return
 	} else {
 		row.Scan(&dpconn)
@@ -44,7 +44,7 @@ func GetDataPoolDpid(datapoolname string) (dpid int) {
 	//fmt.Println(sqlgetdpid)
 	row, err := g_ds.QueryRow(sqlgetdpid)
 	if err != nil {
-		fmt.Println("GetDataPoolDpid QueryRow error:", err.Error())
+		log.Println("GetDataPoolDpid QueryRow error:", err.Error())
 		return
 	} else {
 		row.Scan(&dpid)
@@ -73,7 +73,7 @@ func InsertTagToDb(dpexist bool, p ds.DsPull) (err error) {
 	sqlInsertTag := fmt.Sprintf(`INSERT INTO DH_RPDM_TAG_MAP(TAGNAME ,RPDMID ,DETAIL,CREATE_TIME) 
 		VALUES ('%s', '%d', '%s', datetime('now'))`,
 		p.Tag, rpdmid, p.DestName)
-	fmt.Println(sqlInsertTag)
+	log.Println(sqlInsertTag)
 	_, err = g_ds.Insert(sqlInsertTag)
 	return err
 }
@@ -83,7 +83,7 @@ func GetRepoItemId(repository, dataitem string) (rpdmid int) {
 		repository, dataitem)
 	row, err := g_ds.QueryRow(sqlgetrpdmId)
 	if err != nil {
-		fmt.Println("GetRepoItemId QueryRow error:", err.Error())
+		log.Println("GetRepoItemId QueryRow error:", err.Error())
 		return
 	} else {
 		row.Scan(&rpdmid)
@@ -97,6 +97,7 @@ func InsertItemToDb(repo, item, datapool string) (err error) {
 		sqlInsertItem := fmt.Sprintf(`INSERT INTO DH_DP_RPDM_MAP (RPDMID, REPOSITORY, DATAITEM, DPID, PUBLISH, CREATE_TIME)
 			VALUES (null, '%s', '%s', %d, 'Y',  datetime('now'))`, repo, item, dpid)
 		_, err = g_ds.Insert(sqlInsertItem)
+		log.Println(sqlInsertItem)
 
 	} else {
 		err = errors.New("dpid is not found")
@@ -126,8 +127,10 @@ func GetRpdmIdAndDpId(repo, item string) (rpdmid, dpid int) {
 	}
 	row.Scan(&rpdmid, &dpid)
 	status := GetDataPoolStatusByID(dpid)
-	fmt.Println("GetRpdmIdAndDpId rpdmid, dpid ", rpdmid, dpid)
-	fmt.Println("status:", status)
+	if rpdmid == 0 || dpid == 0 {
+		log.Println("GetRpdmIdAndDpId rpdmid, dpid: ", rpdmid, dpid)
+		log.Println("datapool status:", status)
+	}
 	if status != "A" {
 		return 0, 0
 	}
@@ -154,7 +157,7 @@ func CheckTagExist(repo, item, tag string) (exits bool, err error) {
 func GetDpNameAndDpConn(repo, item, tag string) (dpname, dpconn string) {
 	_, dpid := GetRpdmIdAndDpId(repo, item)
 	if dpid == 0 {
-		fmt.Println("GetDpNameAndDpConn dpid==0")
+		log.Println("GetDpNameAndDpConn dpid==0")
 		return "", ""
 	}
 	dpname, dpconn = GetDpnameDpconnByDpidAndStatus(dpid, "A")
@@ -166,7 +169,7 @@ func GetDpnameDpconnByDpidAndStatus(dpid int, status string) (dpname, dpconn str
 	//fmt.Println(sqlgetdpconn)
 	row, err := g_ds.QueryRow(sqlgetdpconn)
 	if err != nil {
-		fmt.Println("GetDpnameDpconnByDpidAndStatus QueryRow error:", err.Error())
+		log.Println("GetDpnameDpconnByDpidAndStatus QueryRow error:", err.Error())
 		return
 	} else {
 		row.Scan(&dpname, &dpconn)
@@ -182,6 +185,7 @@ func InsertPubTagToDb(repo, item, tag, FileName string) (err error) {
 	}
 	sqlInsertTag := fmt.Sprintf("INSERT INTO DH_RPDM_TAG_MAP (TAGNAME, RPDMID, DETAIL, CREATE_TIME) VALUES ('%s', %d, '%s', datetime('now'))",
 		tag, rpdmid, FileName)
+	log.Println(sqlInsertTag)
 	_, err = g_ds.Insert(sqlInsertTag)
 	if err != nil {
 		return err
