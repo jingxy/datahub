@@ -2,7 +2,13 @@
 
 
 #THIS SHELL SCRIPT IS ESPECIALLY FOR DOCKER CONTAINER.
-./datahub --daemon --token $DAEMON_TOKEN
+
+
+if [ $DAEMON_TOKEN ]; then
+    ./datahub --daemon --token $DAEMON_TOKEN
+else
+    ./datahub --daemon
+fi
 
 while [ 1 ]
 do

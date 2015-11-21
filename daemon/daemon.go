@@ -186,6 +186,10 @@ func RunDaemon() {
 	originalListener, err := net.Listen("unix", cmd.UnixSock)
 	if err != nil {
 		panic(err)
+	} else {
+		if err = os.Chmod(cmd.UnixSock, os.ModePerm); err != nil {
+			log.Error(err)
+		}
 	}
 
 	sl, err = New(originalListener)

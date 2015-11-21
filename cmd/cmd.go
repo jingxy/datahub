@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -21,8 +23,7 @@ type UserInfo struct {
 var (
 	User     = UserInfo{}
 	UnixSock = "/var/run/datahub.sock"
-	//DefaultServer = "http://10.1.235.98:8080"
-	Logged = false
+	Logged   = false
 )
 
 type Command struct {
@@ -106,6 +107,11 @@ var Cmd = []Command{
 		Desc:      "login in to dataos.io.",
 		NeedLogin: true,
 	},
+	{
+		Name:    "ep",
+		Handler: Ep,
+		Desc:    "entrypoint management",
+	},
 }
 
 func login(interactive bool) {
@@ -149,4 +155,35 @@ func printDash(n int) {
 		fmt.Printf("-")
 	}
 	fmt.Println()
+}
+
+func ShowMsgResp(RespBody []byte, bprint bool) (sMsgResp string) {
+	msg := MsgResp{}
+	err := json.Unmarshal(RespBody, &msg)
+	if err != nil {
+		sMsgResp = err.Error() + " " + "ShowMsgResp unmarshal error!"
+		fmt.Println(sMsgResp)
+	} else {
+		sMsgResp = msg.Msg
+		if bprint == true {
+			fmt.Println(sMsgResp)
+		}
+	}
+	return sMsgResp
+}
+
+func showResponse(resp *http.Response) {
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println(resp.StatusCode)
+		return
+	}
+
+	msg := MsgResp{}
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	if err := json.Unmarshal(body, &msg); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(msg.Msg)
+	}
 }
