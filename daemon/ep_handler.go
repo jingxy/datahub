@@ -16,7 +16,7 @@ func epGetHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	if len(EntryPoint) == 0 {
 		msg.Msg = "you don't have any entrypoint."
 	} else {
-		msg.Msg = EntryPoint
+		msg.Msg = EntryPoint + " " + EntryPointStatus
 	}
 	resp, _ := json.Marshal(&msg)
 	fmt.Fprintln(w, string(resp))
