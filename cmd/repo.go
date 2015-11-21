@@ -35,7 +35,7 @@ func Repo(login bool, args []string) (err error) {
 			panic(err)
 		}
 		source := u.Path
-		if u.Path[0] == '/' {
+		if len(u.Path) > 0 && u.Path[0] == '/' {
 			source = u.Path[1:]
 		}
 
