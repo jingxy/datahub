@@ -20,7 +20,7 @@ func RunClient() {
 	for _, v := range cmd.Cmd {
 		if strings.EqualFold(v.Name, command) {
 			commandFound = true
-			if len(os.Args) > 2 && os.Args[2][0] != '-' {
+			if len(os.Args) > 2 && len(os.Args[2]) > 0 && os.Args[2][0] != '-' {
 				subCmdFound := false
 				for _, vv := range v.SubCmd {
 					if strings.EqualFold(vv.Name, os.Args[2]) {

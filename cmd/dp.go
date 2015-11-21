@@ -48,7 +48,7 @@ func Dp(needLogin bool, args []string) (err error) {
 	} else {
 		//support: dp name1 name2 name3
 		for _, v := range args {
-			if v[0] != '-' {
+			if len(v) > 0 && v[0] != '-' {
 				strdp := fmt.Sprintf("/datapools/%s", v)
 				resp, _ := commToDaemon("GET", strdp, nil)
 				defer resp.Body.Close()

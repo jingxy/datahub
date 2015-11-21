@@ -34,7 +34,7 @@ func Pub(needlogin bool, args []string) (err error) {
 	f.StringVar(&pub.Comment, []string{"-comment", "m"}, "", "comments")
 	f.StringVar(&pub.Detail, []string{"-detail"}, "", "tag detail ,for example file name")
 
-	if len(args) > 0 && args[0][0] != '-' {
+	if len(args) > 0 && len(args[0]) > 0 && args[0][0] != '-' {
 		src = args[0]
 		largs = args[1:]
 	}
