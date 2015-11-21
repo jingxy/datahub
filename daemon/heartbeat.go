@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"io/ioutil"
 	"net/http"
@@ -17,8 +18,9 @@ type Beatbody struct {
 }
 
 var (
-	EntryPoint string
-	DaemonID   string
+	EntryPoint       string
+	EntryPointStatus string
+	DaemonID         string
 )
 
 func HeartBeat() {
@@ -45,6 +47,15 @@ func HeartBeat() {
 
 		body, _ := ioutil.ReadAll(resp.Body)
 		log.Printf("HeartBeat http statuscode:%v,  http body:%s", resp.StatusCode, body)
+
+		result := ds.Result{}
+		if err := json.Unmarshal(body, &result); err == nil {
+			if result.Code == 0 {
+				EntryPointStatus = "available"
+			} else {
+				EntryPointStatus = "not available"
+			}
+		}
 
 		time.Sleep(30 * time.Second)
 	}

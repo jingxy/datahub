@@ -30,8 +30,8 @@ func Pub(needlogin bool, args []string) (err error) {
 	var repo, item, tag, src string
 	f := mflag.NewFlagSet("dp create", mflag.ContinueOnError)
 	f.StringVar(&pub.Datapool, []string{"-datapool"}, "", "datapool name")
-	f.StringVar(&pub.Accesstype, []string{"-accesstype"}, "", "dataitem accesstype, private or public")
-	f.StringVar(&pub.Comment, []string{"-comment"}, "", "comments")
+	f.StringVar(&pub.Accesstype, []string{"-accesstype", "t"}, "", "dataitem accesstype, private or public")
+	f.StringVar(&pub.Comment, []string{"-comment", "m"}, "", "comments")
 	f.StringVar(&pub.Detail, []string{"-detail"}, "", "tag detail ,for example file name")
 
 	if len(args) > 0 && args[0][0] != '-' {

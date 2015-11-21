@@ -121,18 +121,3 @@ func GetResultMsg(RespBody []byte, bprint bool) (sMsgResp string) {
 	}
 	return sMsgResp
 }
-
-func ShowMsgResp(RespBody []byte, bprint bool) (sMsgResp string) {
-	msg := MsgResp{}
-	err := json.Unmarshal(RespBody, &msg)
-	if err != nil {
-		sMsgResp = err.Error() + " " + "ShowMsgResp unmarshal error!"
-		fmt.Println(sMsgResp)
-	} else {
-		sMsgResp = msg.Msg
-		if bprint == true {
-			fmt.Println(sMsgResp)
-		}
-	}
-	return sMsgResp
-}

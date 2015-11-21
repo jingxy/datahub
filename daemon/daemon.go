@@ -186,6 +186,10 @@ func RunDaemon() {
 	originalListener, err := net.Listen("unix", cmd.UnixSock)
 	if err != nil {
 		panic(err)
+	} else {
+		if err = os.Chmod(cmd.UnixSock, os.ModePerm); err != nil {
+			log.Error(err)
+		}
 	}
 
 	sl, err = New(originalListener)
@@ -199,6 +203,9 @@ func RunDaemon() {
 	router.GET("/datapools", dpGetAllHandler)
 	router.GET("/datapools/:dpname", dpGetOneHandler)
 	router.DELETE("/datapools/:dpname", dpDeleteOneHandler)
+
+	router.GET("/ep", epGetHandler)
+	router.POST("/ep", epPostHandler)
 
 	router.GET("/repositories/:repo/:item/:tag", repoTagHandler)
 	router.GET("/repositories/:repo/:item", repoDetailHandler)
