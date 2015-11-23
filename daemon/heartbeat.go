@@ -21,6 +21,7 @@ var (
 	EntryPoint       string
 	EntryPointStatus string
 	DaemonID         string
+	heartbeatTimeout = 5 * time.Second
 )
 
 func HeartBeat() {
@@ -57,7 +58,7 @@ func HeartBeat() {
 			}
 		}
 
-		time.Sleep(30 * time.Second)
+		time.Sleep(heartbeatTimeout)
 	}
 }
 
