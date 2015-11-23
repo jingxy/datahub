@@ -210,11 +210,59 @@ password: *******
 $
 ```
 
-#### 5. help命令
+#### 5. pub相关命令
+
+##### 5.1. 
+
+```
+datahub subs 
+```
+输出
+```
+{%REPO/%ITEM    %TYPE}
+```
+例子
+```
+$ datahub subs
+cmcc/beijing        regular file
+repo1/testing       api
+$
+```
+
+##### 2.2. 列出已订阅item详情
+
+```
+datahub subs $REPO/$ITEM
+```
+输出
+```
+%REPO/%ITEM     %TYPE
+DESCRIPTION:
+%DESCRIPTION
+METADATA:
+%METADATA
+{%ITEM:%TAGNAME %UPDATE_TIME    %INFO}
+```
+例子
+```
+$ datahub subs cmcc/beijing
+cmcc/beijing    regular file
+DESCRIPTION:
+移动数据北京地区
+METADATA:
+BLABLABLA
+beijing:chaoyang    15:34 Oct 12 2015       600M
+beijing:daxing  16:40 Oct 13 2015       435M
+beijing:shunyi  16:40 Oct 14 2015       324M
+beijing:haidian 16:40 Oct 15 2015       988M
+$
+```
+
+#### 6. help命令
 
 - help提供datahub所有命令的帮助信息。
 
-##### 5.1. 列出帮助
+##### 6.1. 列出帮助
 
 ```
 datahub help [$CMD] [$SUBCMD]

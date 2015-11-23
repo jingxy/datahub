@@ -31,7 +31,7 @@ func GetDataPoolDpconn(datapoolname string) (dpconn string) {
 	//fmt.Println(sqlgetdpconn)
 	row, err := g_ds.QueryRow(sqlgetdpconn)
 	if err != nil {
-		log.Println("GetDataPoolDpconn QueryRow error:", err.Error())
+		log.Println(" QueryRow error:", err.Error())
 		return
 	} else {
 		row.Scan(&dpconn)
@@ -107,14 +107,16 @@ func InsertItemToDb(repo, item, datapool string) (err error) {
 
 func GetDataPoolStatusByID(dpid int) (status string) {
 	sqlGetDpStatus := fmt.Sprintf("SELECT STATUS FROM DH_DP WHERE DPID=%d", dpid)
-	fmt.Println(sqlGetDpStatus)
 	row, err := g_ds.QueryRow(sqlGetDpStatus)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(sqlGetDpStatus)
+		log.Println(err.Error())
 		return
 	}
 	row.Scan(&status)
-	log.Println("GetDataPoolStatusByID status:", status)
+	if status != "A" {
+		log.Println("dpid:", dpid, " status:", status)
+	}
 	return
 }
 
@@ -157,7 +159,7 @@ func CheckTagExist(repo, item, tag string) (exits bool, err error) {
 func GetDpNameAndDpConn(repo, item, tag string) (dpname, dpconn string) {
 	_, dpid := GetRpdmIdAndDpId(repo, item)
 	if dpid == 0 {
-		log.Println("GetDpNameAndDpConn dpid==0")
+		log.Println(" dpid==0")
 		return "", ""
 	}
 	dpname, dpconn = GetDpnameDpconnByDpidAndStatus(dpid, "A")

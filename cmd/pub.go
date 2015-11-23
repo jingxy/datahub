@@ -125,11 +125,11 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 		result := ds.Result{}
 		err = json.Unmarshal(body, &result)
 		if err != nil {
-			fmt.Println("PubItem error 1.")
+			fmt.Println("Pub error. ", err.Error())
 			return err
 		} else {
 			if result.Code == 0 {
-				fmt.Println("pub success")
+				fmt.Println("Pub success, ", result.Msg)
 			} else {
 				fmt.Println("Error code: ", result.Code, " Msg: ", result.Msg)
 			}
@@ -144,10 +144,10 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 		result := ds.Result{}
 		err = json.Unmarshal(body, &result)
 		if err != nil {
-			fmt.Println("PubItem error .")
+			fmt.Println("Pub error. ", err.Error())
 			return err
 		} else {
-			fmt.Println("Error code: ", resp.StatusCode, "  ", result.Code, " Msg: ", result.Msg)
+			fmt.Println("Http response code: ", resp.StatusCode, "  Error Code: ", result.Code, "  Msg: ", result.Msg)
 		}
 	}
 	return err

@@ -186,7 +186,8 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	if resp.StatusCode == 200 {
 		if NeedCopy {
 			if false == isDirExists(DestFullPath) {
-				os.MkdirAll(DpFullPath, 0755)
+				log.Println("mkdir ", DestFullPath)
+				os.MkdirAll(DestFullPath, 0755)
 			}
 			count, err := CopyFile(pub.Detail, DestFullPathFileName)
 			if err != nil {
@@ -248,13 +249,14 @@ func MkdirForDataItem(repo, item, datapool string) (err error) {
 
 func RollBackItem(repo, item string) {
 	//Delete /repository/repo/item
+	log.Println(repo, "/", item)
 	err := DeleteItemOrTag(repo, item, "")
 	if err != nil {
 		log.Println("DeleteItem err ", err.Error())
 	}
 }
 
-func CheckTagExistAndGetDpFullPath(repo, item, tag string) (filepath string, err error) {
+func CheckTagExistAndGetDpFullPath(repo, item, tag string) (dppath string, err error) {
 	exist, err := CheckTagExist(repo, item, tag)
 	if err != nil {
 		return "", err
@@ -267,12 +269,13 @@ func CheckTagExistAndGetDpFullPath(repo, item, tag string) (filepath string, err
 		log.Println("dpname, dpconn: ", dpname, dpconn)
 		return "", errors.New("dpname or dpconn not found.")
 	}
-	filepath = dpconn + "/" + dpname
+	dppath = dpconn + "/" + dpname
 	return
 }
 
 func RollBackTag(repo, item, tag string) {
 	//Delete /repository/repo/item tag
+	log.Println(repo, "/", item, ":", tag)
 	err := DeleteItemOrTag(repo, item, tag)
 	if err != nil {
 		log.Println("DeleteTag err ", err.Error())
