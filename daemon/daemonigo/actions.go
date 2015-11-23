@@ -2,7 +2,7 @@ package daemonigo
 
 import (
 	"fmt"
-	"log"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"os"
 )
 

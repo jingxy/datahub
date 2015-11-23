@@ -3,9 +3,9 @@ package daemonigo
 
 import (
 	"fmt"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	flag "github.com/asiainfoLDP/datahub/utils/mflag"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
