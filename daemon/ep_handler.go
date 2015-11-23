@@ -38,3 +38,12 @@ func epPostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	fmt.Fprintln(w, string(resp))
 	return
 }
+
+func epDeleteHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	EntryPoint = ""
+	msg := ds.MsgResp{Msg: "OK. your entrypoint has been removed"}
+
+	resp, _ := json.Marshal(&msg)
+	fmt.Fprintln(w, string(resp))
+	return
+}

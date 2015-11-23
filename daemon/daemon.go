@@ -185,7 +185,7 @@ func RunDaemon() {
 	os.Chdir(g_strDpPath)
 	originalListener, err := net.Listen("unix", cmd.UnixSock)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	} else {
 		if err = os.Chmod(cmd.UnixSock, os.ModePerm); err != nil {
 			log.Error(err)
@@ -206,6 +206,7 @@ func RunDaemon() {
 
 	router.GET("/ep", epGetHandler)
 	router.POST("/ep", epPostHandler)
+	router.DELETE("/ep", epDeleteHandler)
 
 	router.GET("/repositories/:repo/:item/:tag", repoTagHandler)
 	router.GET("/repositories/:repo/:item", repoDetailHandler)

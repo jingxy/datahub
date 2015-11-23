@@ -3,12 +3,13 @@ package daemonigo
 
 import (
 	"fmt"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	flag "github.com/asiainfoLDP/datahub/utils/mflag"
+	"github.com/asiainfoLDP/datahub/utils/osext"
 	"io"
-	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
+	//"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -223,7 +224,11 @@ func Status() (isRunning bool, pr *os.Process, e error) {
 // This function can also be used when writing your own daemon actions.
 func StartCommand() (*exec.Cmd, error) {
 	const errLoc = "daemonigo.StartCommand()"
-	path, err := filepath.Abs(os.Args[0])
+	//path, err := filepath.Abs(os.Args[0])
+	path, err := osext.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Println("exec path", path, Token)
 	if err != nil {
 		return nil, fmt.Errorf(

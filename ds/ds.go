@@ -30,6 +30,10 @@ const (
 	TABLE_USER    = "user"
 )
 
+const (
+	DATAHUB_VERSION = "v0.5.0"
+)
+
 type MsgResp struct {
 	Msg string `json:"msg"`
 }

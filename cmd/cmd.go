@@ -68,18 +68,8 @@ var Cmd = []Command{
 		Desc: "list all of datapools.",
 	},
 	{
-		Name:    "repo",
-		Handler: Repo,
-		/*SubCmd: []Command{
-			{
-				Name:    "create",
-				Handler: RepoCreate,
-			},
-			{
-				Name:    "rm",
-				Handler: RepoRm,
-			},
-		},*/
+		Name:      "repo",
+		Handler:   Repo,
 		Desc:      "Repostories mangement",
 		NeedLogin: true,
 	},
@@ -110,7 +100,18 @@ var Cmd = []Command{
 	{
 		Name:    "ep",
 		Handler: Ep,
-		Desc:    "entrypoint management",
+		SubCmd: []Command{
+			{
+				Name:    "rm",
+				Handler: EpRm,
+			},
+		},
+		Desc: "entrypoint management",
+	},
+	{
+		Name:    "version",
+		Handler: Version,
+		Desc:    "datahub version infomation",
 	},
 }
 
@@ -136,7 +137,7 @@ func commToDaemon(method, path string, jsonData []byte) (resp *http.Response, er
 	conn, err := net.Dial("unix", UnixSock)
 	if err != nil {
 		fmt.Println(err.Error())
-		fmt.Println("Datahub Daemon not running? Or you are not root?")
+		fmt.Println("Datahub Daemon not running? use 'datahub --daemon' to start daemon.")
 		os.Exit(2)
 	}
 	//client := &http.Client{}
