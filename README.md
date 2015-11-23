@@ -210,11 +210,46 @@ password: *******
 $
 ```
 
-#### 5. help命令
+#### 5. pub相关命令
+-pub分为发布一个DataItem和发布一个Tag。发布DataItem必带参数：--datapool= , --accesstype=
+发布Tag必带参数：--detail= , 用来描述Tag对应文件名，./表示当前路径；不带路径默认datapool下所属Repository和DataItem的路径
+可选参数--comment= ,描述DataItem或者Tag
+
+##### 5.1. 发布一个DataItem
+
+```
+datahub pub $REPOSITORY/$DATAITEM --datapool=$DATAPOOL --accesstype=public [private]
+```
+输出
+```
+Pub success,  OK
+```
+例子
+```
+$./datahub pub music_1/migu --datapool=mydp --accesstype=public
+Pub success,  OK
+```
+
+##### 5.2.发布一个Tag
+
+```
+datahub pub $REPO/$ITEM:$Tag --detail=$path/$file
+```
+输出
+```
+Pub success, OK
+```
+例子
+```
+$ datahub pub music_1/migu:migu_user_info --detail=./migu_user_info.txt
+Pub success, OK
+$
+```
+#### 6. help命令
 
 - help提供datahub所有命令的帮助信息。
 
-##### 5.1. 列出帮助
+##### 6.1. 列出帮助
 
 ```
 datahub help [$CMD] [$SUBCMD]
