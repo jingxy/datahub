@@ -35,7 +35,8 @@ func DpCreate(needLogin bool, args []string) (err error) {
 	}
 
 	if err = f.Parse(args); err != nil {
-		fmt.Println("parse parameter error")
+		//fmt.Println(err.Error())
+		//fmt.Println("parse parameter error")
 		return
 	}
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
+	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -19,6 +20,11 @@ const (
 )
 
 func Repo(login bool, args []string) (err error) {
+	f := mflag.NewFlagSet("repo", mflag.ContinueOnError)
+	f.Usage = repoUsage
+	if err = f.Parse(args); err != nil {
+		return err
+	}
 	var icmd int
 	if len(args) > 1 {
 		fmt.Println("invalid argument..")
@@ -103,7 +109,7 @@ func Repo(login bool, args []string) (err error) {
 }
 
 func repoUsage() {
-	fmt.Printf("usage: %s repo [[URL]/[REPO]/[ITEM]\n", os.Args[0])
+	fmt.Printf("usage: %s repo [URL]/[REPO]/[ITEM]\n", os.Args[0])
 }
 
 func repoResp(icmd int, respbody []byte, repo, item, tag string) {

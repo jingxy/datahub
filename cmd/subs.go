@@ -4,12 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
+	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"io/ioutil"
 	"os"
 )
 
 func Subs(login bool, args []string) (err error) {
-
+	f := mflag.NewFlagSet("subs", mflag.ContinueOnError)
+	f.Usage = subsUsage
+	if err = f.Parse(args); err != nil {
+		return err
+	}
 	itemDetail := false
 	if len(args) > 1 {
 		fmt.Println("invalid argument..")
@@ -53,7 +58,7 @@ func Subs(login bool, args []string) (err error) {
 }
 
 func subsUsage() {
-	fmt.Printf("usage: %s subs [[URL]/[REPO]/[ITEM]\n", os.Args[0])
+	fmt.Printf("usage: %s subs [URL]/[REPO]/[ITEM]\n", os.Args[0])
 }
 
 func subsResp(detail bool, respbody []byte, repoitem string) {

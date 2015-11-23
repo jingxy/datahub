@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"net"
 	"net/url"
 	"os"
@@ -17,6 +18,11 @@ type FormatEp struct {
 func Ep(needLogin bool, args []string) (err error) {
 
 	//d := FormatEp{}
+	f := mflag.NewFlagSet("ep", mflag.ContinueOnError)
+	f.Usage = epUsage
+	if err = f.Parse(args); err != nil {
+		return err
+	}
 	if len(args) > 1 {
 		epUsage()
 		return

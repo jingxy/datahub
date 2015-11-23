@@ -8,8 +8,8 @@ import (
 	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"io/ioutil"
 	//"net/url"
-	//"os"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -20,7 +20,7 @@ const (
 )
 
 func Pub(needlogin bool, args []string) (err error) {
-	usage := "usage: sudo datahub pub repository/dataitem --datapool=? \n\tsudo datahub pub repository/dataitem:tag --detail=?"
+	usage := "usage: datahub pub repository/dataitem --datapool=? \n\t datahub pub repository/dataitem:tag --detail=?"
 	if len(args) == 0 {
 		fmt.Println(usage)
 		return errors.New("args len error!")
@@ -28,21 +28,26 @@ func Pub(needlogin bool, args []string) (err error) {
 	pub := ds.PubPara{}
 	var largs []string
 	var repo, item, tag, src string
-	f := mflag.NewFlagSet("dp create", mflag.ContinueOnError)
+	f := mflag.NewFlagSet("pub", mflag.ContinueOnError)
 	f.StringVar(&pub.Datapool, []string{"-datapool"}, "", "datapool name")
 	f.StringVar(&pub.Accesstype, []string{"-accesstype", "t"}, "", "dataitem accesstype, private or public")
 	f.StringVar(&pub.Comment, []string{"-comment", "m"}, "", "comments")
 	f.StringVar(&pub.Detail, []string{"-detail"}, "", "tag detail ,for example file name")
-
+	f.Usage = pubUsage
 	if len(args) > 0 && len(args[0]) > 0 && args[0][0] != '-' {
 		src = args[0]
 		largs = args[1:]
+		if err = f.Parse(largs); err != nil {
+			//fmt.Println("-parse parameter error")
+			return err
+		}
+	} else {
+		if err = f.Parse(args); err != nil {
+			//fmt.Println("parse parameter error")
+			return err
+		}
 	}
 
-	if err = f.Parse(largs); err != nil {
-		fmt.Println("parse parameter error")
-		return err
-	}
 	if len(f.Args()) > 0 {
 		fmt.Printf("invalid argument.\nSee '%s --help'.\n", f.Name())
 		return errors.New("invalid argument")
@@ -51,7 +56,7 @@ func Pub(needlogin bool, args []string) (err error) {
 	src = strings.Trim(src, "/")
 	sp := strings.Split(src, "/")
 	if len(sp) != 2 {
-		fmt.Println(usage)
+		//fmt.Println(usage)
 		return errors.New("invalid repo/item")
 	}
 	repo = sp[0]
@@ -151,4 +156,13 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 		}
 	}
 	return err
+}
+
+func pubUsage() {
+	fmt.Printf("usage: \n %s pub REPO/DATAITEM --datapool=?, --accesstype=?\n", os.Args[0])
+	fmt.Println("  --datapool        Specify the datapool that contains the repo/dataitem")
+	fmt.Println("  -t, --accesstype  Specify the access type of the dataitem:public or private, default private")
+	fmt.Printf(" %s pub REPO/DATAITEM:Tag --detail=?\n", os.Args[0])
+	fmt.Println("  --detail          Specify the filename of the tag")
+	fmt.Println("  --comment         Comments about the item or tag")
 }
