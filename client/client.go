@@ -44,7 +44,9 @@ func RunClient() {
 	}
 
 	if command == "stop" {
-		cmd.StopP2P()
+		if err := cmd.StopP2P(); err != nil {
+			fmt.Println(err)
+		}
 		commandFound = true
 	}
 	if !commandFound {

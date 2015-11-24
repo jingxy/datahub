@@ -192,27 +192,19 @@ func showResponse(resp *http.Response) {
 	}
 }
 
-func StopP2P() {
+func StopP2P() error {
 
 	data, err := ioutil.ReadFile(pidFile)
-	if err != nil {
 
+	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Println("datahub is not running.")
-		} else {
-			fmt.Println(err)
+			err = fmt.Errorf("datahub is not running.")
 		}
-		return
-	}
-	pid, err := strconv.Atoi(string(data))
-	if err != nil {
-		fmt.Println("bad process id found", err)
 	} else {
-		if err = syscall.Kill(pid, syscall.SIGQUIT); err != nil {
-			fmt.Println(err)
+		if pid, err := strconv.Atoi(string(data)); err == nil {
+			return syscall.Kill(pid, syscall.SIGQUIT)
 		}
 	}
-
-	return
+	return err
 	//commToDaemon("get", "/stop", nil)
 }
