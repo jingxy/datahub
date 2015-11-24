@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
+	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -11,7 +12,11 @@ import (
 )
 
 func Pull(login bool, args []string) (err error) {
-
+	f := mflag.NewFlagSet("pull", mflag.ContinueOnError)
+	f.Usage = pullUsage
+	if err = f.Parse(args); err != nil {
+		return err
+	}
 	if len(args) != 2 {
 		fmt.Println("invalid argument..")
 		pullUsage()

@@ -136,13 +136,15 @@ func stopHttp(rw http.ResponseWriter, req *http.Request) {
 
 func isDirExists(path string) bool {
 	fi, err := os.Stat(path)
-
 	if err != nil {
+		log.Println(err.Error())
 		return os.IsExist(err)
 	} else {
+		log.Println(fi.IsDir())
 		return fi.IsDir()
 	}
-	panic("not reached")
+	//panic("not reached")
+	return false
 }
 func isFileExists(file string) bool {
 	fi, err := os.Stat(file)

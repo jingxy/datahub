@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"io/ioutil"
-	"log"
-	"path/filepath"
+	//"log"
+	//"path/filepath"
 	"strings"
 )
 
@@ -35,7 +35,8 @@ func DpCreate(needLogin bool, args []string) (err error) {
 	}
 
 	if err = f.Parse(args); err != nil {
-		fmt.Println("parse parameter error")
+		//fmt.Println(err.Error())
+		//fmt.Println("parse parameter error")
 		return
 	}
 
@@ -52,11 +53,8 @@ func DpCreate(needLogin bool, args []string) (err error) {
 	}
 
 	if d.Conn[0] != '/' {
-		d.Conn, err = filepath.Abs(d.Conn)
-		if err != nil {
-			log.Print(err.Error())
-			return err
-		}
+		d.Conn = GstrDpPath + d.Conn
+		//log.Println(d.Conn)
 	}
 
 	jsonData, err := json.Marshal(d)

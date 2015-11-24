@@ -71,3 +71,6 @@ func Login(login bool, args []string) (err error) {
 		return fmt.Errorf("ERROR %d: login failed.", resp.StatusCode)
 	*/
 }
+func loginUsage() {
+	fmt.Printf("usage: %s no parameter\n", os.Args[0])
+}

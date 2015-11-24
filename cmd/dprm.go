@@ -14,9 +14,9 @@ func DpRm(needLogin bool, args []string) (err error) {
 		for _, v := range args {
 			strdpname = v
 			if v[0] != '-' {
-				str_dpurl := fmt.Sprintf("/datapools/%s", strdpname)
+				strDpurl := fmt.Sprintf("/datapools/%s", strdpname)
 
-				resp, _ := commToDaemon("DELETE", str_dpurl, nil)
+				resp, _ := commToDaemon("DELETE", strDpurl, nil)
 				defer resp.Body.Close()
 				body, _ := ioutil.ReadAll(resp.Body)
 				ShowMsgResp(body, true)

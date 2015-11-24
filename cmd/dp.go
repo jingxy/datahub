@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
+	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"io/ioutil"
+	"os"
 )
 
 type FormatDp struct {
@@ -31,6 +33,11 @@ type FormatDpDetail struct {
 func Dp(needLogin bool, args []string) (err error) {
 	if needLogin && !Logged {
 		login(false)
+	}
+	f := mflag.NewFlagSet("dp", mflag.ContinueOnError)
+	f.Usage = dpUsage
+	if err = f.Parse(args); err != nil {
+		return err
 	}
 
 	if len(args) == 0 {
@@ -120,4 +127,12 @@ func GetResultMsg(RespBody []byte, bprint bool) (sMsgResp string) {
 		}
 	}
 	return sMsgResp
+}
+
+func dpUsage() {
+	fmt.Printf("usage: \n %s dp [DPNAME]\n", os.Args[0])
+	fmt.Printf(" %s dp create $DPNAME [--type] --conn=?\n", os.Args[0])
+	fmt.Println("  --type , -t, The type of datapool , file default")
+	fmt.Println("  --conn, datapool connection info, for datapool with type of file, it's dir")
+	fmt.Printf(" %s dp rm DPNAMEs\n", os.Args[0])
 }
