@@ -5,6 +5,7 @@ import (
 	"github.com/asiainfoLDP/datahub/client"
 	"github.com/asiainfoLDP/datahub/daemon"
 	"github.com/asiainfoLDP/datahub/daemon/daemonigo"
+	"github.com/asiainfoLDP/datahub/ds"
 	flag "github.com/asiainfoLDP/datahub/utils/mflag"
 	"os"
 )
@@ -28,7 +29,7 @@ func flagParse() {
 	//fmt.Printf("run daemon: %v, version: %v\n", *flDaemon, *flVersion)
 
 	if *flVersion {
-		fmt.Println("datahub v0.4")
+		fmt.Println("datahub", ds.DATAHUB_VERSION)
 		os.Exit(0)
 	}
 

@@ -14,7 +14,7 @@ var actions = map[string]func(){
 		case err != nil:
 			printStatusErr(err)
 		case isRunning:
-			fmt.Println(AppName + " is already started and running now")
+			log.Error(AppName + " is already started and running now")
 		default:
 			start()
 		}
