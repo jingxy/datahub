@@ -12,7 +12,10 @@ import (
 )
 
 func Pull(login bool, args []string) (err error) {
+	var repo, item string
+	dstruc := ds.DsPull{}
 	f := mflag.NewFlagSet("pull", mflag.ContinueOnError)
+	f.StringVar(&dstruc.DestName, []string{"-destname", "n"}, "", "indicates the name that tag will be stored as ")
 	f.Usage = pullUsage
 	if err = f.Parse(args); err != nil {
 		return err
@@ -31,8 +34,6 @@ func Pull(login bool, args []string) (err error) {
 		source = u.Path[1:]
 	}
 
-	var repo, item string
-	dstruc := ds.DsPull{}
 	if url := strings.Split(source, "/"); len(url) != 2 {
 		fmt.Println("invalid argument..")
 		pullUsage()
@@ -48,7 +49,9 @@ func Pull(login bool, args []string) (err error) {
 		repo = url[0]
 		item = target[0]
 		dstruc.Tag = target[1]
-		dstruc.DestName = dstruc.Tag
+		if len(dstruc.DestName) == 0 {
+			dstruc.DestName = dstruc.Tag
+		}
 		dstruc.Datapool = args[1]
 	}
 
