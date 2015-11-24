@@ -30,7 +30,7 @@ func HeartBeat() {
 		heartbeatbody.Entrypoint = append(heartbeatbody.Entrypoint, EntryPoint)
 		jsondata, err := json.Marshal(heartbeatbody)
 		url := DefaultServer + "/heartbeat"
-		log.Println("connecting to", url, string(jsondata))
+		log.Trace("connecting to", url, string(jsondata))
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsondata))
 		/*
 			if len(loginAuthStr) > 0 {
@@ -47,7 +47,7 @@ func HeartBeat() {
 		defer resp.Body.Close()
 
 		body, _ := ioutil.ReadAll(resp.Body)
-		log.Printf("HeartBeat http statuscode:%v,  http body:%s", resp.StatusCode, body)
+		log.Tracef("HeartBeat http statuscode:%v,  http body:%s", resp.StatusCode, body)
 
 		result := ds.Result{}
 		if err := json.Unmarshal(body, &result); err == nil {

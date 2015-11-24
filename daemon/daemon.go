@@ -22,6 +22,7 @@ import (
 )
 
 var g_ds = new(ds.Ds)
+var logfile = "/var/log/datahub.log"
 
 const g_dbfile string = "/var/lib/datahub/datahub.db"
 
@@ -117,6 +118,7 @@ func (sl *StoppableListener) Accept() (net.Conn, error) {
 }
 
 func (sl *StoppableListener) Stop() {
+	log.CloseLogFile()
 	close(sl.stop)
 }
 
@@ -156,6 +158,7 @@ func isFileExists(file string) bool {
 }
 
 func RunDaemon() {
+	log.SetLogFile(logfile)
 	log.Println("Run daemon..")
 	// Daemonizing echo server application.
 	switch isDaemon, err := daemonigo.Daemonize(); {
@@ -259,6 +262,7 @@ func RunDaemon() {
 	log.Printf("Waiting on server\n")
 	wg.Wait()
 	daemonigo.UnlockPidFile()
+	log.CloseLogFile()
 	g_ds.Db.Close()
 
 }
@@ -391,4 +395,16 @@ func init() {
 	if srv := os.Getenv("DATAHUB_SERVER"); len(srv) > 0 {
 		DefaultServer = srv
 	}
+
+	/*	var err error
+		logFile, err = os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalf("error opening file: %v", err)
+		} else {
+
+			log.SetOutput(logFile)
+		}
+
+		log.Println("This is a test log entry")
+	*/
 }
