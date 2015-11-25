@@ -284,6 +284,7 @@ func GetSampleData(dpconn, itemdesc string) (sample string) {
 		}
 	}
 	log.Println("sample data:", sample)
+	//need lenth check
 	return sample
 }
 

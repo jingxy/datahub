@@ -16,18 +16,20 @@ func Pull(login bool, args []string) (err error) {
 	dstruc := ds.DsPull{}
 	f := mflag.NewFlagSet("pull", mflag.ContinueOnError)
 	f.StringVar(&dstruc.DestName, []string{"-destname", "d"}, "", "indicates the name that tag will be stored as ")
-	f.Usage = pullUsage
-	if err = f.Parse(args); err != nil {
-		return err
-	}
-	if len(args) < 2 || (len(args) >= 0 && (args[0][0] == '-' || args[1][0] == '-')) {
+
+	if len(args) < 2 || (len(args) >= 2 && (args[0][0] == '-' || args[1][0] == '-')) {
 		fmt.Println("invalid argument..")
 		pullUsage()
 		return
 	}
+	f.Usage = pullUsage
+	if err = f.Parse(args[2:]); err != nil {
+		return err
+	}
 	u, err := url.Parse(args[0])
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 	source := strings.Trim(u.Path, "/")
 
@@ -52,11 +54,10 @@ func Pull(login bool, args []string) (err error) {
 	}
 
 	//get datapool and itemdesc
-	if store := strings.Split(strings.Trim(args[1], "/"), "/"); len(store) != 2 {
-		fmt.Println("DATAPOOL/ITEMDESC format error!")
-		pullUsage()
-		return
-	} else {
+	if store := strings.Split(strings.Trim(args[1], "/"), "/"); len(store) == 1 {
+		dstruc.Datapool = store[0]
+		dstruc.ItemDesc = repo + "_" + item
+	} else if len(store) == 2 {
 		dstruc.Datapool = store[0]
 		dstruc.ItemDesc = store[1]
 		if len(dstruc.Datapool) == 0 {
@@ -67,6 +68,10 @@ func Pull(login bool, args []string) (err error) {
 		if len(dstruc.ItemDesc) == 0 {
 			dstruc.ItemDesc = repo + "_" + item
 		}
+	} else {
+		fmt.Println("DATAPOOL/ITEMDESC format error!")
+		pullUsage()
+		return
 	}
 
 	jsonData, err := json.Marshal(dstruc)
