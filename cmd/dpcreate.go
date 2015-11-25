@@ -20,7 +20,7 @@ func DpCreate(needLogin bool, args []string) (err error) {
 	f := mflag.NewFlagSet("dp create", mflag.ContinueOnError)
 	d := FormatDpCreate{}
 	f.StringVar(&d.Type, []string{"-type", "t"}, "file", "datapool type")
-	f.StringVar(&d.Conn, []string{"-conn"}, "", "datapool connection info")
+	f.StringVar(&d.Conn, []string{"-conn", "c"}, "", "datapool connection info")
 
 	if len(args) > 0 && args[0][0] != '-' {
 		d.Name = args[0]

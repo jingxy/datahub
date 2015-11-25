@@ -20,9 +20,10 @@ const (
 )
 
 func Pub(needlogin bool, args []string) (err error) {
-	usage := "usage: datahub pub repository/dataitem DPNAME/ITEMDESC? \n\t datahub pub repository/dataitem:tag --detail=?"
+	usage := "usage: datahub pub repository/dataitem DPNAME/ITEMDESC \n\t datahub pub repository/dataitem:tag TAGDETAIL"
 	if len(args) < 2 {
-		fmt.Println(usage)
+		//fmt.Println(usage)
+		pubUsage()
 		return errors.New("args len error!")
 	}
 	pub := ds.PubPara{}
@@ -71,8 +72,8 @@ func Pub(needlogin bool, args []string) (err error) {
 			pub.ItemDesc = se[1]
 			err = PubItem(repo, item, pub, args)
 		} else {
-			fmt.Println("input DPNAME/ITEMDESC when publish dataitem.")
-			err = errors.New("input DPNAME/ITEMDESC when publish dataitem.")
+			fmt.Println("please input DPNAME/ITEMDESC when you publish dataitem.")
+			err = errors.New("please input DPNAME/ITEMDESC when you publish dataitem.")
 		}
 	} else if l == 2 {
 		item = sptag[0]
@@ -169,10 +170,8 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 }
 
 func pubUsage() {
-	fmt.Printf("usage: \n %s pub REPO/DATAITEM --datapool=?, --accesstype=?\n", os.Args[0])
-	fmt.Println("  --datapool        Specify the datapool that contains the repo/dataitem")
-	fmt.Println("  -t, --accesstype  Specify the access type of the dataitem:public or private, default private")
-	fmt.Printf(" %s pub REPO/DATAITEM:Tag --detail=?\n", os.Args[0])
-	fmt.Println("  --detail          Specify the filename of the tag")
-	fmt.Println("  --comment         Comments about the item or tag")
+	fmt.Printf("usage: \n %s pub REPO/DATAITEM  DPNAME/ITEMDESC, --accesstype=?\n", os.Args[0])
+	fmt.Println("  --accesstype,-t   Specify the access type of the dataitem:public or private, default private")
+	fmt.Printf(" %s pub REPO/DATAITEM:Tag TAGDETAIL\n", os.Args[0])
+	fmt.Println("  --comment,-m      Comments about the item or tag")
 }

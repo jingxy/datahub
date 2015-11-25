@@ -194,3 +194,16 @@ func InsertPubTagToDb(repo, item, tag, FileName string) (err error) {
 	}
 	return
 }
+
+func GetItemDesc(Repository, Dataitem string) (ItemDesc string, err error) {
+	getItemDesc := fmt.Sprintf("SELECT ITEMDESC FROM DH_DP_RPDM_MAP WHERE REPOSITORY='%s' AND DATAITEM='%s' AND STATUS='A'", Repository, Dataitem)
+	//log.Println(ItemDesc)
+	row, err := g_ds.QueryRow(getItemDesc)
+	if err != nil {
+		log.Errorf(" QueryRow error:%s\n", err.Error())
+		return "", err
+	} else {
+		row.Scan(&ItemDesc)
+		return ItemDesc, err
+	}
+}
