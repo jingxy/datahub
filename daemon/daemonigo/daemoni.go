@@ -153,6 +153,7 @@ func UnlockPidFile() {
 	if pidFile != nil {
 		syscall.Flock(int(pidFile.Fd()), syscall.LOCK_UN)
 		pidFile.Close()
+		os.Remove(PidFile)
 	}
 }
 

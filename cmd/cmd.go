@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strconv"
 	"strings"
+	"syscall"
 )
 
 const GstrDpPath string = "/var/lib/datahub/"
@@ -24,6 +26,7 @@ var (
 	User     = UserInfo{}
 	UnixSock = "/var/run/datahub.sock"
 	Logged   = false
+	pidFile  = "/var/run/datahub.pid"
 )
 
 type Command struct {
@@ -187,4 +190,29 @@ func showResponse(resp *http.Response) {
 	} else {
 		fmt.Println(msg.Msg)
 	}
+}
+
+func StopP2P() {
+
+	data, err := ioutil.ReadFile(pidFile)
+	if err != nil {
+
+		if os.IsNotExist(err) {
+			fmt.Println("datahub is not running.")
+		} else {
+			fmt.Println(err)
+		}
+		return
+	}
+	pid, err := strconv.Atoi(string(data))
+	if err != nil {
+		fmt.Println("bad process id found", err)
+	} else {
+		if err = syscall.Kill(pid, syscall.SIGQUIT); err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	return
+	//commToDaemon("get", "/stop", nil)
 }

@@ -50,6 +50,10 @@ func SetLogLevel(level int) {
 	defaultLogLevel = level
 }
 
+func GetLogLevel() (level int) {
+	return defaultLogLevel
+}
+
 func SetLogFile(logfile string) {
 	f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
@@ -63,11 +67,8 @@ func SetLogFile(logfile string) {
 func CloseLogFile() {
 	if logfileFd != nil {
 		logfileFd.Close()
+		logfileFd = nil
 	}
-}
-
-func GetLogLevel() (level int) {
-	return defaultLogLevel
 }
 
 func SetOutput(w io.Writer) {

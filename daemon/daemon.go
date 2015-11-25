@@ -15,22 +15,30 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"sync"
 	"syscall"
 	"time"
 )
 
-var g_ds = new(ds.Ds)
-var logfile = "/var/log/datahub.log"
+var (
+	g_ds    = new(ds.Ds)
+	logfile = "/var/log/datahub.log"
+	wg      sync.WaitGroup
+)
 
-const g_dbfile string = "/var/lib/datahub/datahub.db"
-
-const g_strDpPath string = cmd.GstrDpPath
+const (
+	g_dbfile    string = "/var/lib/datahub/datahub.db"
+	g_strDpPath string = cmd.GstrDpPath
+)
 
 type StoppableListener struct {
 	*net.UnixListener          //Wrapped listener
 	stop              chan int //Channel used only to indicate listener should shutdown
+}
+
+type StoppabletcpListener struct {
+	*net.TCPListener          //Wrapped listener
+	stop             chan int //Channel used only to indicate listener should shutdown
 }
 
 type strc_dp struct {
@@ -51,14 +59,6 @@ func dbinit() {
 
 }
 
-func Trace() {
-	pc := make([]uintptr, 10) // at least 1 entry needed
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	file, line := f.FileLine(pc[0])
-	fmt.Printf("%s:%d %s()\n", file, line, f.Name())
-}
-
 func chk(err error) {
 	if err != nil {
 		panic(err)
@@ -71,14 +71,27 @@ func get(err error) {
 }
 
 func New(l net.Listener) (*StoppableListener, error) {
-	tcpL, ok := l.(*net.UnixListener)
+	unixL, ok := l.(*net.UnixListener)
 
 	if !ok {
 		return nil, errors.New("Cannot wrap listener")
 	}
 
 	retval := &StoppableListener{}
-	retval.UnixListener = tcpL
+	retval.UnixListener = unixL
+	retval.stop = make(chan int)
+
+	return retval, nil
+}
+func tcpNew(l net.Listener) (*StoppabletcpListener, error) {
+	tcpL, ok := l.(*net.TCPListener)
+
+	if !ok {
+		return nil, errors.New("Cannot wrap listener")
+	}
+
+	retval := &StoppabletcpListener{}
+	retval.TCPListener = tcpL
 	retval.stop = make(chan int)
 
 	return retval, nil
@@ -86,6 +99,7 @@ func New(l net.Listener) (*StoppableListener, error) {
 
 var StoppedError = errors.New("Listener stopped")
 var sl = new(StoppableListener)
+var p2psl = new(StoppabletcpListener)
 
 func (sl *StoppableListener) Accept() (net.Conn, error) {
 
@@ -118,8 +132,43 @@ func (sl *StoppableListener) Accept() (net.Conn, error) {
 }
 
 func (sl *StoppableListener) Stop() {
-	log.CloseLogFile()
+
 	close(sl.stop)
+}
+
+func (tcpsl *StoppabletcpListener) Accept() (net.Conn, error) {
+
+	for {
+		//Wait up to one second for a new connection
+		tcpsl.SetDeadline(time.Now().Add(time.Second))
+
+		newConn, err := tcpsl.TCPListener.Accept()
+
+		//Check for the channel being closed
+		select {
+		case <-tcpsl.stop:
+			return nil, StoppedError
+		default:
+			//If the channel is still open, continue as normal
+		}
+
+		if err != nil {
+			netErr, ok := err.(net.Error)
+
+			//If this is a timeout, then continue to wait for
+			//new connections
+			if ok && netErr.Timeout() && netErr.Temporary() {
+				continue
+			}
+		}
+
+		return newConn, err
+	}
+}
+
+func (tcpsl *StoppabletcpListener) Stop() {
+
+	close(tcpsl.stop)
 }
 
 func helloHttp(rw http.ResponseWriter, req *http.Request, ps httprouter.Params) {
@@ -131,8 +180,9 @@ func helloHttp(rw http.ResponseWriter, req *http.Request, ps httprouter.Params) 
 
 func stopHttp(rw http.ResponseWriter, req *http.Request) {
 	rw.WriteHeader(http.StatusOK)
-	fmt.Fprintf(rw, "Hello HTTP!\n")
+	//fmt.Fprintf(rw, "Hello HTTP!\n")
 	sl.Close()
+	p2psl.Close()
 	log.Println("connect close")
 }
 
@@ -230,42 +280,72 @@ func RunDaemon() {
 
 	server := http.Server{}
 
-	stop := make(chan os.Signal)
-	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-	var wg sync.WaitGroup
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-		server.Serve(sl)
+
+		stop := make(chan os.Signal)
+		signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+		select {
+		case signal := <-stop:
+			log.Printf("Got signal:%v", signal)
+		}
+
+		sl.Stop()
+		p2psl.Stop()
+
 	}()
 
-	//p2p server
+	go startP2PServer()
+	go HeartBeat()
+
+	/*
+		wg.Add(1)
+		defer wg.Done()
+	*/
+	log.Info("starting listener...")
+	server.Serve(sl)
+	log.Info("Stopping listener...")
+
+	wg.Wait()
+
+	daemonigo.UnlockPidFile()
+	g_ds.Db.Close()
+
+	log.Info("daemon exit....")
+	log.CloseLogFile()
+
+}
+
+func startP2PServer() {
+	p2pListener, err := net.Listen("tcp", ":35800")
+	if err != nil {
+		panic(err)
+	}
+
+	p2psl, err = tcpNew(p2pListener)
+	if err != nil {
+		panic(err)
+	}
+
 	P2pRouter := httprouter.New()
 	P2pRouter.GET("/", sayhello)
 	P2pRouter.GET("/pull/:repo/:dataitem/:tag", p2p_pull)
 	P2pRouter.GET("/health", p2pHealthyCheckHandler)
 
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-		http.ListenAndServe(":35800", P2pRouter)
-	}()
-	go HeartBeat()
+	p2pserver := http.Server{Handler: P2pRouter}
 
-	log.Printf("Serving HTTP\n")
-	select {
-	case signal := <-stop:
-		log.Printf("Got signal:%v\n", signal)
-	}
-	log.Printf("Stopping listener\n")
-	sl.Stop()
-	log.Printf("Waiting on server\n")
-	wg.Wait()
-	daemonigo.UnlockPidFile()
-	log.CloseLogFile()
-	g_ds.Db.Close()
+	//stop := make(chan os.Signal)
+	//signal.Notify(stop, syscall.SIGINT)
 
+	wg.Add(1)
+	defer wg.Done()
+
+	log.Info("p2p server start")
+	p2pserver.Serve(p2psl)
+	log.Info("p2p server stop")
+
+	//wg.Wait()
 }
+
 func p2pHealthyCheckHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	rw.WriteHeader(http.StatusOK)
 }

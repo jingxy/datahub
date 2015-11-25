@@ -42,6 +42,11 @@ func RunClient() {
 		cmd.Help(false, os.Args[2:])
 		commandFound = true
 	}
+
+	if command == "stop" {
+		cmd.StopP2P()
+		commandFound = true
+	}
 	if !commandFound {
 		fmt.Println(command, "not found")
 		ShowUsage()
