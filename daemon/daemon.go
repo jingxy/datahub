@@ -318,12 +318,12 @@ func RunDaemon() {
 func startP2PServer() {
 	p2pListener, err := net.Listen("tcp", ":35800")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	p2psl, err = tcpNew(p2pListener)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	P2pRouter := httprouter.New()

@@ -20,7 +20,3 @@ func TestDp(t *testing.T) {
 		t.Error(err.Error())
 	}
 }
-
-func TestDpResp(t *testing.T) {
-	fmt.Println("TestDpResp")
-}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/asiainfoLDP/datahub/ds"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -97,7 +98,7 @@ var Cmd = []Command{
 	{
 		Name:      "login",
 		Handler:   Login,
-		Desc:      "login in to dataos.io.",
+		Desc:      "login to dataos.io.",
 		NeedLogin: true,
 	},
 	{
@@ -192,27 +193,32 @@ func showResponse(resp *http.Response) {
 	}
 }
 
-func StopP2P() {
+func showError(resp *http.Response) {
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	result := ds.Result{}
+	err := json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("ERROR[%v] %v\n", result.Code, result.Msg)
+	}
+
+}
+
+func StopP2P() error {
 
 	data, err := ioutil.ReadFile(pidFile)
-	if err != nil {
 
+	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Println("datahub is not running.")
-		} else {
-			fmt.Println(err)
+			err = fmt.Errorf("datahub is not running.")
 		}
-		return
-	}
-	pid, err := strconv.Atoi(string(data))
-	if err != nil {
-		fmt.Println("bad process id found", err)
 	} else {
-		if err = syscall.Kill(pid, syscall.SIGQUIT); err != nil {
-			fmt.Println(err)
+		if pid, err := strconv.Atoi(string(data)); err == nil {
+			return syscall.Kill(pid, syscall.SIGQUIT)
 		}
 	}
-
-	return
+	return err
 	//commToDaemon("get", "/stop", nil)
 }

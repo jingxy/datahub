@@ -3,7 +3,6 @@ package daemon
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"io/ioutil"
 	"net/http"
@@ -97,6 +96,6 @@ func commToServer(method, path string, buffer []byte, w http.ResponseWriter) (re
 	w.WriteHeader(resp.StatusCode)
 	body, _ := ioutil.ReadAll(resp.Body)
 	w.Write(body)
-	fmt.Println(resp.StatusCode, string(body))
+	log.Info(resp.StatusCode, string(body))
 	return
 }
