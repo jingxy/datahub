@@ -53,25 +53,7 @@ func RunClient() {
 		fmt.Println(command, "not found")
 		ShowUsage()
 	}
-	/*
 
-		if len(os.Args) > 2 && os.Args[2][0] != '-' {
-			command += os.Args[2]
-		}
-
-		cmdFound := false
-		for _, v := range cmd.Cmds {
-			if strings.EqualFold(v.CmdName, command) {
-				v.Handler(os.Args[1:], v)
-				cmdFound = true
-			}
-
-		}
-		if !cmdFound {
-			fmt.Println(os.Args[1], "not found.")
-			ShowUsage()
-		}
-	*/
 	return
 
 }
