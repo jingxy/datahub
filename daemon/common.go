@@ -31,7 +31,7 @@ func GetDataPoolDpconn(datapoolname string) (dpconn string) {
 	//fmt.Println(sqlgetdpconn)
 	row, err := g_ds.QueryRow(sqlgetdpconn)
 	if err != nil {
-		log.Println(" QueryRow error:", err.Error())
+		log.Errorf(" QueryRow error:%s\n", err.Error())
 		return
 	} else {
 		row.Scan(&dpconn)
@@ -131,7 +131,7 @@ func GetRpdmidDpidItemdesc(repo, item string) (rpdmid, dpid int, Itemdesc string
 	row.Scan(&rpdmid, &dpid, &Itemdesc)
 	status := GetDataPoolStatusByID(dpid)
 	if rpdmid == 0 || dpid == 0 || len(Itemdesc) == 0 {
-		log.Println("GetRpdmidDpidItemdesc rpdmid, dpid, Itemdesc :", rpdmid, dpid, Itemdesc)
+		log.Println("rpdmid, dpid, Itemdesc :", rpdmid, dpid, Itemdesc)
 		log.Println("datapool status:", status)
 	}
 	if status != "A" {

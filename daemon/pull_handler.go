@@ -34,10 +34,11 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	p.Repository = ps.ByName("repo")
 	p.Dataitem = ps.ByName("item")
-	if exist := CheckDataPoolExist(p.Datapool); exist == false {
-		strret = p.Datapool + " not found. " + p.Tag + " will be pull into " + g_strDpPath + p.ItemDesc
+
+	if dpconn := GetDataPoolDpconn(p.Datapool); len(dpconn) == 0 {
+		strret = p.Datapool + " not found. " + p.Tag + " will be pull into " + g_strDpPath + "/" + p.ItemDesc
 	} else {
-		strret = p.Repository + "/" + p.Dataitem + "/" + p.Tag + " will be pull into " + p.Datapool + "/" + p.ItemDesc
+		strret = p.Repository + "/" + p.Dataitem + "/" + p.Tag + " will be pull into " + dpconn + "/" + p.ItemDesc
 	}
 
 	url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag

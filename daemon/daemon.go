@@ -376,27 +376,35 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	log.Println(sRepoName, sDataItem, sTag)
 	var irpdmid, idpid int
-	var stagdetail, sdpname, sdpconn string
+	var stagdetail, sdpname, sdpconn, itemdesc string
 	msg := &ds.MsgResp{}
 	msg.Msg = "OK."
 
-	sSqlGetRpdmidDpid := fmt.Sprintf(`SELECT DPID, RPDMID FROM DH_DP_RPDM_MAP 
-    	WHERE REPOSITORY = '%s' AND DATAITEM = '%s'`, sRepoName, sDataItem)
+	sSqlGetRpdmidDpid := fmt.Sprintf(`SELECT DPID, RPDMID, ITEMDESC FROM DH_DP_RPDM_MAP 
+    	WHERE REPOSITORY = '%s' AND DATAITEM = '%s' AND STATUS='A'`, sRepoName, sDataItem)
 	row, err := g_ds.QueryRow(sSqlGetRpdmidDpid)
 	if err != nil {
 		msg.Msg = err.Error()
 	}
-	row.Scan(&idpid, &irpdmid)
-	fmt.Println("dpid", idpid, "rpdmid", irpdmid)
+	row.Scan(&idpid, &irpdmid, &itemdesc)
+	if len(itemdesc) == 0 {
+		itemdesc = sRepoName + "_" + sDataItem
+	}
+	log.Println("dpid:", idpid, "rpdmid:", irpdmid, "itemdesc:", itemdesc)
 
 	sSqlGetTagDetail := fmt.Sprintf(`SELECT DETAIL FROM DH_RPDM_TAG_MAP 
-        WHERE RPDMID = '%d' AND TAGNAME = '%s'`, irpdmid, sTag)
+        WHERE RPDMID = '%d' AND TAGNAME = '%s' AND STATUS='A'`, irpdmid, sTag)
 	tagrow, err := g_ds.QueryRow(sSqlGetTagDetail)
 	if err != nil {
 		msg.Msg = err.Error()
 	}
 	tagrow.Scan(&stagdetail)
 	log.Println("tagdetail", stagdetail)
+	if len(stagdetail) == 0 {
+		log.Println("tag lenth is 0")
+		http.Error(rw, "tag lenth is 0", http.StatusBadRequest)
+		return
+	}
 
 	sSqlGetDpconn := fmt.Sprintf(`SELECT DPNAME, DPCONN FROM DH_DP WHERE DPID='%d'`, idpid)
 	dprow, err := g_ds.QueryRow(sSqlGetDpconn)
@@ -404,30 +412,29 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		msg.Msg = err.Error()
 	}
 	dprow.Scan(&sdpname, &sdpconn)
-	fmt.Println("dpname", sdpname, "dpconn", sdpconn)
+	log.Println("dpname:", sdpname, "dpconn:", sdpconn)
 
-	filepathname := "/" + sdpconn + "/" + sdpname + "/" + sRepoName + "/" + sDataItem + "/" + stagdetail
-	fmt.Println(" filename:", filepathname)
+	filepathname := sdpconn + "/" + itemdesc + "/" + stagdetail
+	log.Println("filename:", filepathname)
 	if exists := isFileExists(filepathname); !exists {
-		filepathname = "/" + sdpconn + "/" + sdpname + "/" + sRepoName + "/" + sDataItem + "/" + sTag
+		filepathname = "/" + sdpconn + "/" + sdpname + "/" + sRepoName + "/" + sDataItem + "/" + stagdetail
 		if exists := isFileExists(filepathname); !exists {
-			filepathname = "/" + sdpconn + "/" + stagdetail
-			if exists := isFileExists(filepathname); !exists {
-				filepathname = "/var/lib/datahub/" + sTag
-				if exists := isFileExists(filepathname); !exists {
-					fmt.Println(" filename:", filepathname)
-					//http.NotFound(rw, r)
-					msg.Msg = fmt.Sprintf("tag:%s not found", sTag)
-					resp, _ := json.Marshal(msg)
-					respStr := string(resp)
-					rw.WriteHeader(http.StatusNotFound)
-					fmt.Fprintln(rw, respStr)
-					return
-				}
-			}
+			//filepathname = "/" + sdpconn + "/" + stagdetail
+			//if exists := isFileExists(filepathname); !exists {
+			//	filepathname = "/var/lib/datahub/" + sTag
+			//	if exists := isFileExists(filepathname); !exists {
+			log.Println(" filename:", filepathname)
+			//http.NotFound(rw, r)
+			msg.Msg = fmt.Sprintf("tag:%s not found", sTag)
+			resp, _ := json.Marshal(msg)
+			respStr := string(resp)
+			rw.WriteHeader(http.StatusNotFound)
+			fmt.Fprintln(rw, respStr)
+			return
+
 		}
 	}
-
+	log.Println("Tag file full path name :", filepathname)
 	rw.Header().Set("Source-FileName", stagdetail)
 	http.ServeFile(rw, r, filepathname)
 
@@ -467,6 +474,7 @@ func checkAccessToken(tokenUrl string) bool {
 	if err = json.Unmarshal(body, &result); err != nil {
 		log.Println(err)
 	}
+	log.Println(string(body))
 
 	return tkresp.Valid
 }
