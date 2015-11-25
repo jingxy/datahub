@@ -23,24 +23,24 @@ type AccessToken struct {
 func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	log.Println(r.URL.Path + "(pull)\n")
 	result, _ := ioutil.ReadAll(r.Body)
-	reqJson := ds.DsPull{}
+	p := ds.DsPull{}
 	var strret string
 
-	if err := json.Unmarshal(result, &reqJson); err != nil {
+	if err := json.Unmarshal(result, &p); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	reqJson.Repository = ps.ByName("repo")
-	reqJson.Dataitem = ps.ByName("item")
-	if exist := CheckDataPoolExist(reqJson.Datapool); exist == false {
-		strret = reqJson.Datapool + " not found. " + reqJson.Tag + " will be pull into " + g_strDpPath
+	p.Repository = ps.ByName("repo")
+	p.Dataitem = ps.ByName("item")
+	if exist := CheckDataPoolExist(p.Datapool); exist == false {
+		strret = p.Datapool + " not found. " + p.Tag + " will be pull into " + g_strDpPath + p.ItemDesc
 	} else {
-		strret = reqJson.Repository + "/" + reqJson.Dataitem + "/" + reqJson.Tag + " will be pull into " + reqJson.Datapool
+		strret = p.Repository + "/" + p.Dataitem + "/" + p.Tag + " will be pull into " + p.Datapool + "/" + p.ItemDesc
 	}
 
-	url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
+	url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag
 
 	token, entrypoint, err := getAccessToken(url, w)
 	if err != nil {
@@ -48,9 +48,9 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		strret = err.Error()
 		return
 	} else {
-		url = "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag +
+		url = "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag +
 			"?token=" + token + "&username=" + gstrUsername
-		go dl(url, entrypoint, reqJson)
+		go dl(url, entrypoint, p)
 	}
 
 	log.Println(strret)
@@ -60,18 +60,18 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Write(resp)
 
 	/*
-		url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
+		url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag
 
 		token, entrypoint, err := getAccessToken(url, w)
 		if err != nil {
 			return
 		} else {
-			url = "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag +
+			url = "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag +
 				"?token=" + token + "?username=" + gstrUsername
 		}
 		//fmt.Fprintln(w, url)
 
-		//url := "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + reqJson.Tag
+		//url := "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag
 		//entrypoint := ""
 	*/
 	return
@@ -110,14 +110,16 @@ func download(url string, p ds.DsPull) (int64, error) {
 	var destfilename string
 	dpexist := CheckDataPoolExist(p.Datapool)
 	if dpexist == false {
-		destfilename = g_strDpPath + p.DestName
+		os.MkdirAll(g_strDpPath+"/"+p.ItemDesc, 0777)
+		destfilename = g_strDpPath + "/" + p.ItemDesc + "/" + p.DestName
 	} else {
 		dpconn := GetDataPoolDpconn(p.Datapool)
 		if len(dpconn) == 0 {
-			destfilename = g_strDpPath + p.DestName
+			os.MkdirAll(g_strDpPath+"/"+p.ItemDesc, 0777)
+			destfilename = g_strDpPath + "/" + p.ItemDesc + "/" + p.DestName
 		} else {
-			os.MkdirAll(dpconn+"/"+p.Datapool+"/"+p.Repository+"/"+p.Dataitem, 0755)
-			destfilename = dpconn + "/" + p.Datapool + "/" + p.Repository + "/" + p.Dataitem + "/" + p.DestName
+			os.MkdirAll(dpconn+"/"+p.ItemDesc, 0777)
+			destfilename = dpconn + "/" + p.ItemDesc + "/" + p.DestName
 		}
 	}
 	fmt.Println(destfilename)

@@ -15,12 +15,12 @@ func Pull(login bool, args []string) (err error) {
 	var repo, item string
 	dstruc := ds.DsPull{}
 	f := mflag.NewFlagSet("pull", mflag.ContinueOnError)
-	f.StringVar(&dstruc.DestName, []string{"-destname", "n"}, "", "indicates the name that tag will be stored as ")
+	f.StringVar(&dstruc.DestName, []string{"-destname", "d"}, "", "indicates the name that tag will be stored as ")
 	f.Usage = pullUsage
 	if err = f.Parse(args); err != nil {
 		return err
 	}
-	if len(args) != 2 {
+	if len(args) < 2 || (len(args) >= 0 && (args[0][0] == '-' || args[1][0] == '-')) {
 		fmt.Println("invalid argument..")
 		pullUsage()
 		return
@@ -29,10 +29,7 @@ func Pull(login bool, args []string) (err error) {
 	if err != nil {
 		panic(err)
 	}
-	source := u.Path
-	if u.Path[0] == '/' {
-		source = u.Path[1:]
-	}
+	source := strings.Trim(u.Path, "/")
 
 	if url := strings.Split(source, "/"); len(url) != 2 {
 		fmt.Println("invalid argument..")
@@ -52,10 +49,25 @@ func Pull(login bool, args []string) (err error) {
 		if len(dstruc.DestName) == 0 {
 			dstruc.DestName = dstruc.Tag
 		}
-		dstruc.Datapool = args[1]
 	}
 
-	//fmt.Println("uri:", uri)
+	//get datapool and itemdesc
+	if store := strings.Split(strings.Trim(args[1], "/"), "/"); len(store) != 2 {
+		fmt.Println("DATAPOOL/ITEMDESC format error!")
+		pullUsage()
+		return
+	} else {
+		dstruc.Datapool = store[0]
+		dstruc.ItemDesc = store[1]
+		if len(dstruc.Datapool) == 0 {
+			fmt.Println("DATAPOOL/ITEMDESC are required!")
+			pullUsage()
+			return
+		}
+		if len(dstruc.ItemDesc) == 0 {
+			dstruc.ItemDesc = repo + "_" + item
+		}
+	}
 
 	jsonData, err := json.Marshal(dstruc)
 	if err != nil {
@@ -102,5 +114,6 @@ func Pull(login bool, args []string) (err error) {
 }
 
 func pullUsage() {
-	fmt.Printf("usage: %s pull [[URL]/[REPO]/[ITEM][:TAG]] [DATAPOOL]\n", os.Args[0])
+	fmt.Printf("usage: \n %s pull [[URL]/[REPO]/[ITEM][:TAG]]  DATAPOOL  [--destname]\n", os.Args[0])
+	fmt.Println("  --destname, -d =filename  indicates the name that tag will be stored as")
 }

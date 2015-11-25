@@ -63,15 +63,16 @@ func InsertTagToDb(dpexist bool, p ds.DsPull) (err error) {
 	rpdmid := GetRepoItemId(p.Repository, p.Dataitem)
 	//fmt.Println("GetRepoItemId1", rpdmid, DpId)
 	if rpdmid == 0 {
-		sqlInsertRpdm := fmt.Sprintf(`INSERT INTO DH_DP_RPDM_MAP(RPDMID ,REPOSITORY , DATAITEM, 
-        	DPID  , PUBLISH ,CREATE_TIME ) VALUES (null, '%s', '%s', %d, 'N', datetime('now'))`,
-			p.Repository, p.Dataitem, DpId)
+		sqlInsertRpdm := fmt.Sprintf(`INSERT INTO DH_DP_RPDM_MAP
+			(RPDMID ,REPOSITORY, DATAITEM, DPID, PUBLISH ,CREATE_TIME ,STATUS, ITEMDESC) 
+		    VALUES (null, '%s', '%s', %d, 'N', datetime('now'), 'A', '%s')`,
+			p.Repository, p.Dataitem, DpId, p.ItemDesc)
 		g_ds.Insert(sqlInsertRpdm)
 		rpdmid = GetRepoItemId(p.Repository, p.Dataitem)
 		//fmt.Println("GetRepoItemId2", rpdmid, DpId)
 	}
-	sqlInsertTag := fmt.Sprintf(`INSERT INTO DH_RPDM_TAG_MAP(TAGNAME ,RPDMID ,DETAIL,CREATE_TIME) 
-		VALUES ('%s', '%d', '%s', datetime('now'))`,
+	sqlInsertTag := fmt.Sprintf(`INSERT INTO DH_RPDM_TAG_MAP(TAGID, TAGNAME ,RPDMID ,DETAIL,CREATE_TIME, STATUS) 
+		VALUES (null, '%s', '%d', '%s', datetime('now'), 'A')`,
 		p.Tag, rpdmid, p.DestName)
 	log.Println(sqlInsertTag)
 	_, err = g_ds.Insert(sqlInsertTag)
@@ -79,7 +80,7 @@ func InsertTagToDb(dpexist bool, p ds.DsPull) (err error) {
 }
 
 func GetRepoItemId(repository, dataitem string) (rpdmid int) {
-	sqlgetrpdmId := fmt.Sprintf("SELECT RPDMID FROM DH_DP_RPDM_MAP WHERE REPOSITORY='%s' AND DATAITEM='%s'",
+	sqlgetrpdmId := fmt.Sprintf("SELECT RPDMID FROM DH_DP_RPDM_MAP WHERE REPOSITORY='%s' AND DATAITEM='%s' AND STATUS='A'",
 		repository, dataitem)
 	row, err := g_ds.QueryRow(sqlgetrpdmId)
 	if err != nil {
@@ -91,11 +92,11 @@ func GetRepoItemId(repository, dataitem string) (rpdmid int) {
 	}
 }
 
-func InsertItemToDb(repo, item, datapool string) (err error) {
+func InsertItemToDb(repo, item, datapool, itemdesc string) (err error) {
 	dpid := GetDataPoolDpid(datapool)
 	if dpid > 0 {
-		sqlInsertItem := fmt.Sprintf(`INSERT INTO DH_DP_RPDM_MAP (RPDMID, REPOSITORY, DATAITEM, DPID, PUBLISH, CREATE_TIME)
-			VALUES (null, '%s', '%s', %d, 'Y',  datetime('now'))`, repo, item, dpid)
+		sqlInsertItem := fmt.Sprintf(`INSERT INTO DH_DP_RPDM_MAP (RPDMID, REPOSITORY, DATAITEM, ITEMDESC, DPID, PUBLISH, CREATE_TIME, STATUS)
+			VALUES (null, '%s', '%s', '%s', %d, 'Y',  datetime('now'), 'A')`, repo, item, itemdesc, dpid)
 		_, err = g_ds.Insert(sqlInsertItem)
 		log.Println(sqlInsertItem)
 
@@ -120,33 +121,32 @@ func GetDataPoolStatusByID(dpid int) (status string) {
 	return
 }
 
-func GetRpdmIdAndDpId(repo, item string) (rpdmid, dpid int) {
-	sqlGetRpdmIdAndDpId := fmt.Sprintf("SELECT RPDMID, DPID FROM DH_DP_RPDM_MAP WHERE REPOSITORY='%s' AND DATAITEM='%s'", repo, item)
-	row, err := g_ds.QueryRow(sqlGetRpdmIdAndDpId)
+func GetRpdmidDpidItemdesc(repo, item string) (rpdmid, dpid int, Itemdesc string) {
+	sqlGetRpdmidDpidItemdesc := fmt.Sprintf("SELECT RPDMID, DPID, ITEMDESC FROM DH_DP_RPDM_MAP WHERE REPOSITORY='%s' AND DATAITEM='%s' AND STATUS='A'", repo, item)
+	row, err := g_ds.QueryRow(sqlGetRpdmidDpidItemdesc)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	row.Scan(&rpdmid, &dpid)
+	row.Scan(&rpdmid, &dpid, &Itemdesc)
 	status := GetDataPoolStatusByID(dpid)
-	if rpdmid == 0 || dpid == 0 {
-		log.Println("GetRpdmIdAndDpId rpdmid, dpid: ", rpdmid, dpid)
+	if rpdmid == 0 || dpid == 0 || len(Itemdesc) == 0 {
+		log.Println("GetRpdmidDpidItemdesc rpdmid, dpid, Itemdesc :", rpdmid, dpid, Itemdesc)
 		log.Println("datapool status:", status)
 	}
 	if status != "A" {
-		return 0, 0
+		return 0, 0, ""
 	}
-
 	return
 }
 
 func CheckTagExist(repo, item, tag string) (exits bool, err error) {
-	rpdmid, dpid := GetRpdmIdAndDpId(repo, item)
+	rpdmid, dpid, _ := GetRpdmidDpidItemdesc(repo, item)
 	if rpdmid == 0 || dpid == 0 {
 		fmt.Println("rpdmid, dpid ", rpdmid, dpid)
 		return false, errors.New("repo and dataitem not exist")
 	}
-	sqlCheckTag := fmt.Sprintf("SELECT COUNT(1) FROM DH_RPDM_TAG_MAP WHERE RPDMID='%d' AND TAGNAME='%s'", rpdmid, tag)
+	sqlCheckTag := fmt.Sprintf("SELECT COUNT(1) FROM DH_RPDM_TAG_MAP WHERE RPDMID='%d' AND TAGNAME='%s' AND STATUS='A'", rpdmid, tag)
 	row, err := g_ds.QueryRow(sqlCheckTag)
 	var count int
 	row.Scan(&count)
@@ -156,11 +156,11 @@ func CheckTagExist(repo, item, tag string) (exits bool, err error) {
 	return
 }
 
-func GetDpNameAndDpConn(repo, item, tag string) (dpname, dpconn string) {
-	_, dpid := GetRpdmIdAndDpId(repo, item)
+func GetDpnameDpconnItemdesc(repo, item string) (dpname, dpconn, ItemDesc string) {
+	_, dpid, ItemDesc := GetRpdmidDpidItemdesc(repo, item)
 	if dpid == 0 {
 		log.Println(" dpid==0")
-		return "", ""
+		return "", "", ""
 	}
 	dpname, dpconn = GetDpnameDpconnByDpidAndStatus(dpid, "A")
 	return
@@ -185,7 +185,7 @@ func InsertPubTagToDb(repo, item, tag, FileName string) (err error) {
 	if rpdmid == 0 {
 		return errors.New("Dataitem is not found which need to be published before publishing tag. ")
 	}
-	sqlInsertTag := fmt.Sprintf("INSERT INTO DH_RPDM_TAG_MAP (TAGNAME, RPDMID, DETAIL, CREATE_TIME) VALUES ('%s', %d, '%s', datetime('now'))",
+	sqlInsertTag := fmt.Sprintf("INSERT INTO DH_RPDM_TAG_MAP (TAGID, TAGNAME, RPDMID, DETAIL, CREATE_TIME, STATUS) VALUES (null, '%s', %d, '%s', datetime('now'), 'A')",
 		tag, rpdmid, FileName)
 	log.Println(sqlInsertTag)
 	_, err = g_ds.Insert(sqlInsertTag)
