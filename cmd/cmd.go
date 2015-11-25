@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/asiainfoLDP/datahub/ds"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -97,7 +98,7 @@ var Cmd = []Command{
 	{
 		Name:      "login",
 		Handler:   Login,
-		Desc:      "login in to dataos.io.",
+		Desc:      "login to dataos.io.",
 		NeedLogin: true,
 	},
 	{
@@ -190,6 +191,19 @@ func showResponse(resp *http.Response) {
 	} else {
 		fmt.Println(msg.Msg)
 	}
+}
+
+func showError(resp *http.Response) {
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	result := ds.Result{}
+	err := json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("ERROR[%v] %v\n", result.Code, result.Msg)
+	}
+
 }
 
 func StopP2P() error {

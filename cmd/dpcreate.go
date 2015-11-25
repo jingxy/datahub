@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/utils/mflag"
-	"io/ioutil"
+	//"io/ioutil"
 	//"log"
 	//"path/filepath"
 	"strings"
@@ -68,8 +68,9 @@ func DpCreate(needLogin bool, args []string) (err error) {
 
 	resp, err := commToDaemon("POST", "/datapools", jsonData)
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	ShowMsgResp(body, true)
+	//body, _ := ioutil.ReadAll(resp.Body)
+	//ShowMsgResp(body, true)
+	showResponse(resp)
 
 	return err
 }

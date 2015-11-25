@@ -51,7 +51,7 @@ func Subs(login bool, args []string) (err error) {
 			fmt.Println(err)
 		}
 	} else {
-		fmt.Println(resp.StatusCode)
+		showResponse(resp)
 	}
 
 	return err

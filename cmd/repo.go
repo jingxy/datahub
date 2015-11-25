@@ -92,7 +92,7 @@ func Repo(login bool, args []string) (err error) {
 			panic(err)
 		}
 		if result.Code != 1400 {
-			fmt.Println(result.Msg)
+			fmt.Printf("ERROR[%v] %v\n", result.Code, result.Msg)
 			return nil
 		}
 		//fmt.Println(resp.StatusCode, "returned....")

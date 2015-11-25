@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
 	"github.com/asiainfoLDP/datahub/utils/mflag"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -71,9 +70,8 @@ func Pull(login bool, args []string) (err error) {
 
 	if resp.StatusCode == 200 {
 		//body, _ := ioutil.ReadAll(resp.Body)
-		//fmt.Println(body)
-		body, _ := ioutil.ReadAll(resp.Body)
-		ShowMsgResp(body, true)
+		//ShowMsgResp(body, true)
+		showResponse(resp)
 		//fmt.Printf("%s/%s:%s will be download to %s\n.", repo, item, ds.Tag, ds.Datapool)
 
 	} else if resp.StatusCode == 401 {
@@ -84,14 +82,8 @@ func Pull(login bool, args []string) (err error) {
 			return err
 		}
 	} else {
-		body, _ := ioutil.ReadAll(resp.Body)
-		result := ds.Result{}
-		err := json.Unmarshal(body, &result)
-		if err != nil {
-			fmt.Println(err.Error())
-			return err
-		}
-		fmt.Println(resp.StatusCode, result.Msg, ", please ensure you have subscribed the repository/dataitem.")
+		showError(resp)
+
 		return nil
 	}
 	//body, _ := ioutil.ReadAll(resp.Body)
