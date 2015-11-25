@@ -162,21 +162,6 @@ func printDash(n int) {
 	fmt.Println()
 }
 
-func ShowMsgResp(RespBody []byte, bprint bool) (sMsgResp string) {
-	msg := MsgResp{}
-	err := json.Unmarshal(RespBody, &msg)
-	if err != nil {
-		sMsgResp = err.Error() + " " + "ShowMsgResp unmarshal error!"
-		fmt.Println(sMsgResp)
-	} else {
-		sMsgResp = msg.Msg
-		if bprint == true {
-			fmt.Println(sMsgResp)
-		}
-	}
-	return sMsgResp
-}
-
 func showResponse(resp *http.Response) {
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println(resp.StatusCode)
