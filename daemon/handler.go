@@ -13,7 +13,7 @@ var (
 	loginLogged   = false
 	loginAuthStr  string
 	gstrUsername  string
-	DefaultServer = "http://54.223.58.0:8888"
+	DefaultServer = "http://hub.dataos.io/api"
 )
 
 type UserForJson struct {
