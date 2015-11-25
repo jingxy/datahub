@@ -11,7 +11,8 @@ type DsPull struct {
 	Datapool   string `json:"datapool"`
 	DestName   string `json:"destname"`
 	Repository string `json:"repository, omitempty"`
-	Dataitem   string `jsong:"dataitem, omitempty"`
+	Dataitem   string `json:"dataitem, omitempty"`
+	ItemDesc   string `json:"itemdesc, omitempty"`
 }
 type Result struct {
 	Code int         `json:"code,omitempty"`
@@ -71,9 +72,11 @@ type Repository struct {
 
 type PubPara struct {
 	Datapool   string `json:"datapool, omitempty"`
+	DpSub      string `json:"dpsub, omitempty"`
 	Detail     string `json:"detail, omitempty"`
 	Accesstype string `json:"itemaccesstype, omitempty"`
 	Comment    string `json:"comment, omitempty"`
+	ItemDesc   string `json:"itemdesc, omitempty"`
 }
 
 type Ds struct {
@@ -85,7 +88,7 @@ const Create_dh_dp string = `CREATE TABLE IF NOT EXISTS
        DPID    INTEGER PRIMARY KEY AUTOINCREMENT, 
        DPNAME  VARCHAR(32), 
        DPTYPE  VARCHAR(32), 
-       DPCONN  VARCHAR(128), 
+       DPCONN  VARCHAR(256), 
        STATUS  CHAR(2) 
     );`
 
@@ -97,8 +100,10 @@ const Create_dh_dp_repo_ditem_map string = `CREATE TABLE IF NOT EXISTS
         REPOSITORY   VARCHAR(128), 
         DATAITEM     VARCHAR(128), 
         DPID         INTEGER, 
+        ITEMDESC     VARCHAR(128),
         PUBLISH      CHAR(2), 
-        CREATE_TIME  DATETIME 
+        CREATE_TIME  DATETIME,
+        STATUS       CHAR(2)
     );`
 
 //DH_DP_REPO_DITEM_MAP  PUBLISH: 'Y' the dataitem is published by you,
@@ -106,10 +111,12 @@ const Create_dh_dp_repo_ditem_map string = `CREATE TABLE IF NOT EXISTS
 //TAGID        INTEGER PRIMARY KEY AUTOINCREMENT,
 const Create_dh_repo_ditem_tag_map string = `CREATE TABLE IF NOT EXISTS 
     DH_RPDM_TAG_MAP (  
+    	TAGID        INTEGER PRIMARY KEY AUTOINCREMENT,
         TAGNAME      VARCHAR(128),
         RPDMID       INTEGER,
         DETAIL       VARCHAR(128),
-        CREATE_TIME  DATETIME
+        CREATE_TIME  DATETIME,
+        STATUS       CHAR(2)
     );`
 
 type Executer interface {

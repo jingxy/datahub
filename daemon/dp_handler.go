@@ -33,22 +33,18 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 			var sdpDirName string
 			if len(reqJson.Conn) == 0 {
 				reqJson.Conn = g_strDpPath
-				sdpDirName = g_strDpPath + reqJson.Name
+				sdpDirName = g_strDpPath
 
 			} else if reqJson.Conn[0] != '/' {
 				sdpDirName = g_strDpPath + reqJson.Conn
 				reqJson.Conn = sdpDirName
-				if reqJson.Conn[len(reqJson.Conn)-1] == '/' {
+				/*if reqJson.Conn[len(reqJson.Conn)-1] == '/' {
 					sdpDirName = sdpDirName + reqJson.Name
 				} else {
 					sdpDirName = sdpDirName + "/" + reqJson.Name
-				}
+				}*/
 			} else {
-				if reqJson.Conn[len(reqJson.Conn)-1] == '/' {
-					sdpDirName = reqJson.Conn + reqJson.Name
-				} else {
-					sdpDirName = reqJson.Conn + "/" + reqJson.Name
-				}
+				sdpDirName = reqJson.Conn
 			}
 
 			dpexist := CheckDataPoolExist(reqJson.Name)
@@ -58,8 +54,8 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				fmt.Fprintln(rw, string(resp))
 				return
 			}
-
-			if err := os.MkdirAll(sdpDirName, 0755); err != nil {
+			if err := os.MkdirAll(sdpDirName, 0777); err != nil {
+				log.Println(sdpDirName)
 				msg.Msg = err.Error()
 			} else {
 				msg.Msg = fmt.Sprintf("OK. dp:%s total path:%s", reqJson.Name, sdpDirName)
@@ -166,10 +162,11 @@ func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 	rowdp.Scan(&dpid, &onedp.Name, &onedp.Type, &onedp.Conn)
 	if dpid > 0 {
 		//Use "left out join" to get repository/dataitem records, whether it has tags or not.
-		sqlTag := fmt.Sprintf(`SELECT A.REPOSITORY, A.DATAITEM, A.PUBLISH ,strftime(A.CREATE_TIME), B.TAGNAME, strftime(B.CREATE_TIME)
+		//B.STATUS='A'
+		sqlTag := fmt.Sprintf(`SELECT A.REPOSITORY, A.DATAITEM, A.ITEMDESC, A.PUBLISH ,strftime(A.CREATE_TIME), B.TAGNAME, B.DETAIL,strftime(B.CREATE_TIME)
 				FROM DH_DP_RPDM_MAP A LEFT JOIN DH_RPDM_TAG_MAP B
 				ON (A.RPDMID = B.RPDMID)
-				WHERE A.DPID = %v`, dpid)
+				WHERE A.DPID = %v AND A.STATUS='A' `, dpid)
 		tagrows, err := g_ds.QueryRows(sqlTag)
 		if err != nil {
 			SqlExecError(rw, result, err.Error())
@@ -179,7 +176,7 @@ func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 		for tagrows.Next() {
 			item := cmd.Item{}
 			var repoitemtime string
-			tagrows.Scan(&item.Repository, &item.DataItem, &item.Publish, &repoitemtime, &item.Tag, &item.Time)
+			tagrows.Scan(&item.Repository, &item.DataItem, &item.ItemDesc, &item.Publish, &repoitemtime, &item.Tag, &item.TagDetail, &item.Time)
 			if len(item.Time) == 0 {
 				item.Time = repoitemtime
 			}

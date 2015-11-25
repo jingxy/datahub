@@ -25,12 +25,15 @@ type Label struct {
 type ic struct {
 	AccessType string `json:"itemaccesstype"`
 	Comment    string `json:"comment"`
+	Meta       string `json:"meta,omitempty"`
+	Sample     string `json:"sample,omitempty"`
 	Slabel     Label  `json:"label"`
 }
 
 func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	log.Println(r.URL.Path, "(pub dataitem)")
-
+	repo := ps.ByName("repo")
+	item := ps.ByName("item")
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	pub := ds.PubPara{}
 	if err := json.Unmarshal(reqBody, &pub); err != nil {
@@ -43,7 +46,12 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		return
 	}
 
-	icpub := ic{AccessType: pub.Accesstype, Comment: pub.Comment}
+	meta, sample := GetMetaAndSampleData(repo, item)
+
+	icpub := ic{AccessType: pub.Accesstype,
+		Comment: pub.Comment,
+		Meta:    meta,
+		Sample:  sample}
 	isys := Sys{Supplystyle: "batch"}
 	icpub.Slabel = Label{Ssys: isys}
 
@@ -74,17 +82,14 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	rbody, _ := ioutil.ReadAll(resp.Body)
 	log.Println(resp.StatusCode, string(rbody))
 
-	repo := ps.ByName("repo")
-	item := ps.ByName("item")
-
 	if resp.StatusCode == 200 {
-		err := MkdirForDataItem(repo, item, pub.Datapool)
+		err := MkdirForDataItem(repo, item, pub.Datapool, pub.ItemDesc)
 		if err != nil {
 			RollBackItem(repo, item)
 			WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
 				fmt.Sprintf("Mkdir error! %s", err.Error()))
 		} else {
-			err = InsertItemToDb(repo, item, pub.Datapool)
+			err = InsertItemToDb(repo, item, pub.Datapool, pub.ItemDesc)
 			if err != nil {
 				RollBackItem(repo, item)
 				WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
@@ -129,29 +134,23 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	item := ps.ByName("item")
 	tag := ps.ByName("tag")
 
-	var NeedCopy bool
+	//var NeedCopy bool
 	//get DpFullPath and check whether repo/dataitem has been published
-	DpFullPath, err := CheckTagExistAndGetDpFullPath(repo, item, tag)
-	if err != nil || len(DpFullPath) == 0 {
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, err.Error()+"  Datapool Path:"+DpFullPath)
+	DpItemFullPath, err := CheckTagExistAndGetDpFullPath(repo, item, tag)
+	if err != nil || len(DpItemFullPath) == 0 {
+		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, err.Error()+"  Datapool+Itemdesc Path: "+DpItemFullPath)
 		return
 	}
 	splits := strings.Split(pub.Detail, "/")
 	FileName := splits[len(splits)-1]
-	DestFullPath := DpFullPath + "/" + repo + "/" + item
-	DestFullPathFileName := DestFullPath + "/" + FileName
-	if len(splits) == 1 {
-		if isFileExists(DestFullPathFileName) == false {
-			WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorFileNotExist, DestFullPathFileName+" not found")
-			return
-		}
-		NeedCopy = false
-	} else {
-		if isFileExists(pub.Detail) == false {
-			WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorFileNotExist, pub.Detail+" not found")
-			return
-		}
-		NeedCopy = true
+	//DestFullPath := DpFullPath
+	DestFullPathFileName := DpItemFullPath + "/" + FileName
+
+	if isFileExists(DestFullPathFileName) == false {
+		errlog := fmt.Sprintf("%s is not found, please ensure %s is in dir:%s", DestFullPathFileName, FileName, DpItemFullPath)
+		log.Error(errlog)
+		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorFileNotExist, errlog)
+		return
 	}
 
 	body, err := json.Marshal(&struct {
@@ -184,7 +183,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	log.Println(resp.StatusCode, string(rbody))
 
 	if resp.StatusCode == 200 {
-		if NeedCopy {
+		/*if NeedCopy {
 			if false == isDirExists(DestFullPath) {
 				log.Println("mkdir ", DestFullPath)
 				os.MkdirAll(DestFullPath, 0755)
@@ -197,7 +196,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 				return
 			}
 			log.Printf("Copy %d bytes from %s to %s", count, pub.Detail, DestFullPathFileName)
-		}
+		}*/
 		err = InsertPubTagToDb(repo, item, tag, FileName)
 		if err != nil {
 			RollBackTag(repo, item, tag)
@@ -224,6 +223,23 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 }
 
+func GetMetaAndSampleData(repo, item string) (meta, sample string) {
+	_, dpconn, itemdesc := GetDpnameDpconnItemdesc(repo, item)
+	if len(dpconn) == 0 || len(itemdesc) == 0 {
+		log.Errorf("dpconn:", dpconn, "itedesc:", itemdesc)
+		return
+	}
+	meta = "  "
+	sample = GetSampleData(dpconn, itemdesc)
+
+	return
+}
+
+func GetSampleData(dpconn, itemdesc string) (sample string) {
+
+	return sample
+}
+
 func WriteHttpResultWithoutData(w http.ResponseWriter, httpcode, errorcode int, msg string) {
 	w.WriteHeader(httpcode)
 	respbody, _ := json.Marshal(&struct {
@@ -235,11 +251,11 @@ func WriteHttpResultWithoutData(w http.ResponseWriter, httpcode, errorcode int, 
 	w.Write(respbody)
 }
 
-func MkdirForDataItem(repo, item, datapool string) (err error) {
+func MkdirForDataItem(repo, item, datapool, itemdesc string) (err error) {
 	dpconn := GetDataPoolDpconn(datapool)
 	if len(dpconn) != 0 {
-		err = os.MkdirAll(dpconn+"/"+datapool+"/"+repo+"/"+item, 0755)
-		log.Println(dpconn + "/" + datapool + "/" + repo + "/" + item)
+		err = os.MkdirAll(dpconn+"/"+itemdesc, 0777)
+		log.Println(dpconn + "/" + itemdesc)
 		return err
 	} else {
 		return errors.New(fmt.Sprintf("dpconn is not found for datapool %s", datapool))
@@ -264,12 +280,12 @@ func CheckTagExistAndGetDpFullPath(repo, item, tag string) (dppath string, err e
 	if exist == true {
 		return "", errors.New("Tag already exist.")
 	}
-	dpname, dpconn := GetDpNameAndDpConn(repo, item, tag)
-	if len(dpname) == 0 || len(dpconn) == 0 {
-		log.Println("dpname, dpconn: ", dpname, dpconn)
+	dpname, dpconn, ItemDesc := GetDpnameDpconnItemdesc(repo, item)
+	if len(dpname) == 0 || len(dpconn) == 0 || len(ItemDesc) == 0 {
+		log.Println("dpname, dpconn, ItemDesc: ", dpname, dpconn, ItemDesc)
 		return "", errors.New("dpname or dpconn not found.")
 	}
-	dppath = dpconn + "/" + dpname
+	dppath = dpconn + "/" + ItemDesc
 	return
 }
 

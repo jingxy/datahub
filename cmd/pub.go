@@ -20,41 +20,38 @@ const (
 )
 
 func Pub(needlogin bool, args []string) (err error) {
-	usage := "usage: datahub pub repository/dataitem --datapool=? \n\t datahub pub repository/dataitem:tag --detail=?"
-	if len(args) == 0 {
+	usage := "usage: datahub pub repository/dataitem DPNAME/ITEMDESC? \n\t datahub pub repository/dataitem:tag --detail=?"
+	if len(args) < 2 {
 		fmt.Println(usage)
 		return errors.New("args len error!")
 	}
 	pub := ds.PubPara{}
-	var largs []string
-	var repo, item, tag, src string
+	//var largs []string = args
+	var repo, item, tag, argfi, argse string
 	f := mflag.NewFlagSet("pub", mflag.ContinueOnError)
-	f.StringVar(&pub.Datapool, []string{"-datapool"}, "", "datapool name")
+	//f.StringVar(&pub.Datapool, []string{"-datapool", "p"}, "", "datapool name")
 	f.StringVar(&pub.Accesstype, []string{"-accesstype", "t"}, "", "dataitem accesstype, private or public")
 	f.StringVar(&pub.Comment, []string{"-comment", "m"}, "", "comments")
-	f.StringVar(&pub.Detail, []string{"-detail"}, "", "tag detail ,for example file name")
+	//f.StringVar(&pub.Detail, []string{"-detail", "d"}, "", "tag detail ,for example file name")
 	f.Usage = pubUsage
-	if len(args) > 0 && len(args[0]) > 0 && args[0][0] != '-' {
-		src = args[0]
-		largs = args[1:]
-		if err = f.Parse(largs); err != nil {
-			//fmt.Println("-parse parameter error")
-			return err
-		}
-	} else {
-		if err = f.Parse(args); err != nil {
-			//fmt.Println("parse parameter error")
-			return err
-		}
+
+	if err = f.Parse(args); err != nil {
+		//fmt.Println("parse parameter error")
+		return err
+	}
+	if len(args[0]) == 0 || len(args[1]) == 0 {
+		fmt.Println(usage)
+		return errors.New("need item or tag error!")
 	}
 
-	if len(f.Args()) > 0 {
+	/*if len(f.Args()) > 0 {
 		fmt.Printf("invalid argument.\nSee '%s --help'.\n", f.Name())
 		return errors.New("invalid argument")
-	}
+	}*/
 
-	src = strings.Trim(src, "/")
-	sp := strings.Split(src, "/")
+	argfi = strings.Trim(args[0], "/")
+	//deal arg[0]
+	sp := strings.Split(argfi, "/")
 	if len(sp) != 2 {
 		//fmt.Println(usage)
 		return errors.New("invalid repo/item")
@@ -64,10 +61,20 @@ func Pub(needlogin bool, args []string) (err error) {
 	l := len(sptag)
 	if l == 1 {
 		item = sptag[0]
-		err = PubItem(repo, item, pub, args)
+		argse = strings.Trim(args[1], "/")
+		se := strings.Split(argse, "/")
+		if len(se) == 2 {
+			pub.Datapool = se[0]
+			pub.ItemDesc = se[1]
+			err = PubItem(repo, item, pub, args)
+		} else {
+			fmt.Println("input DPNAME/ITEMDESC when publish dataitem.")
+			err = errors.New("input DPNAME/ITEMDESC when publish dataitem.")
+		}
 	} else if l == 2 {
 		item = sptag[0]
 		tag = sptag[1]
+		pub.Detail = args[1]
 		err = PubTag(repo, item, tag, pub, args)
 	} else {
 		fmt.Printf("invalid argument.\nSee '%s --help'.\n", f.Name())

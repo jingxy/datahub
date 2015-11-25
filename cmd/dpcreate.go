@@ -12,7 +12,7 @@ import (
 
 type FormatDpCreate struct {
 	Name string `json:"dpname"`
-	Type string `json:"dptype"`
+	Type string `json:"dptype, omitempty"`
 	Conn string `json:"dpconn"`
 }
 
@@ -65,7 +65,7 @@ func DpCreate(needLogin bool, args []string) (err error) {
 	if needLogin && !Logged {
 		login(false)
 	}
-
+	//fmt.Println(string(jsonData))
 	resp, err := commToDaemon("POST", "/datapools", jsonData)
 	defer resp.Body.Close()
 	//body, _ := ioutil.ReadAll(resp.Body)
