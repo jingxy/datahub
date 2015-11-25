@@ -34,8 +34,9 @@ func Subs(login bool, args []string) (err error) {
 		return err
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+
 	if resp.StatusCode == 200 {
+		body, _ := ioutil.ReadAll(resp.Body)
 		if itemDetail {
 			subsResp(itemDetail, body, args[0])
 		} else {
@@ -51,7 +52,7 @@ func Subs(login bool, args []string) (err error) {
 			fmt.Println(err)
 		}
 	} else {
-		showResponse(resp)
+		showError(resp)
 	}
 
 	return err
