@@ -30,15 +30,18 @@ func Pub(needlogin bool, args []string) (err error) {
 	var repo, item, tag, argfi, argse string
 	f := mflag.NewFlagSet("pub", mflag.ContinueOnError)
 	//f.StringVar(&pub.Datapool, []string{"-datapool", "p"}, "", "datapool name")
-	f.StringVar(&pub.Accesstype, []string{"-accesstype", "t"}, "", "dataitem accesstype, private or public")
+	f.StringVar(&pub.Accesstype, []string{"-accesstype", "t"}, "private", "dataitem accesstype, private or public")
 	f.StringVar(&pub.Comment, []string{"-comment", "m"}, "", "comments")
 	//f.StringVar(&pub.Detail, []string{"-detail", "d"}, "", "tag detail ,for example file name")
 	f.Usage = pubUsage
 
-	if err = f.Parse(args); err != nil {
+	if err = f.Parse(args[2:]); err != nil {
 		//fmt.Println("parse parameter error")
 		return err
 	}
+
+	//fmt.Println(pub.Accesstype)
+	//fmt.Println(pub.Comment)
 	if len(args[0]) == 0 || len(args[1]) == 0 {
 		fmt.Println(usage)
 		return errors.New("need item or tag error!")

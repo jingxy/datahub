@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -15,6 +16,8 @@ import (
 	"os"
 	"strings"
 )
+
+var SampleFiles = []string{"sample.md", "Sample.md", "SAMPLE.MD"}
 
 type Sys struct {
 	Supplystyle string `json:"supply_style"`
@@ -46,7 +49,7 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		return
 	}
 
-	meta, sample := GetMetaAndSampleData(repo, item)
+	meta, sample := GetMetaAndSampleData(pub.Datapool, pub.ItemDesc)
 
 	icpub := ic{AccessType: pub.Accesstype,
 		Comment: pub.Comment,
@@ -223,10 +226,10 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 }
 
-func GetMetaAndSampleData(repo, item string) (meta, sample string) {
-	_, dpconn, itemdesc := GetDpnameDpconnItemdesc(repo, item)
+func GetMetaAndSampleData(datapool, itemdesc string) (meta, sample string) {
+	dpconn := GetDataPoolDpconn(datapool)
 	if len(dpconn) == 0 || len(itemdesc) == 0 {
-		log.Errorf("dpconn:", dpconn, "itedesc:", itemdesc)
+		log.Errorf("dpconn:%s,  itemdesc:%s \n", dpconn, itemdesc)
 		return
 	}
 	meta = "  "
@@ -236,7 +239,51 @@ func GetMetaAndSampleData(repo, item string) (meta, sample string) {
 }
 
 func GetSampleData(dpconn, itemdesc string) (sample string) {
-
+	dirname := dpconn + "/" + itemdesc
+	var filename string
+	for _, v := range SampleFiles {
+		filename = dirname + "/" + v
+		if isFileExists(filename) == true {
+			if bytes, err := ioutil.ReadFile(filename); err == nil {
+				sample = string(bytes)
+				return sample
+			} else {
+				log.Error(err)
+			}
+		}
+	}
+	d, err := os.Open(dirname) //ppen dir
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	defer d.Close()
+	ff, _ := d.Readdir(10) //  return []fileinfo
+	for i, fi := range ff {
+		log.Printf("sample filename %d: %+v\n", i, fi.Name())
+		filename = strings.ToLower(fi.Name())
+		if filename != "sample.md" && filename != "meta.md" {
+			f, err := os.Open(dirname + "/" + filename)
+			log.Println("filename:", dirname+"/"+filename)
+			if err != nil {
+				continue
+			}
+			defer f.Close()
+			scanner := bufio.NewScanner(f)
+			scanner.Split(bufio.ScanLines)
+			var i = 0
+			for scanner.Scan() {
+				if i > 10 {
+					break
+				}
+				i++
+				sample += scanner.Text() + "\n"
+				//log.Println(scanner.Text())
+			}
+			break
+		}
+	}
+	log.Println("sample data:", sample)
 	return sample
 }
 
