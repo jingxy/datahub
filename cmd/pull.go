@@ -111,6 +111,6 @@ func Pull(login bool, args []string) (err error) {
 }
 
 func pullUsage() {
-	fmt.Printf("usage: \n %s pull [[URL]/[REPO]/[ITEM][:TAG]]  DATAPOOL[/SUBDIR]  [--destname]\n", os.Args[0])
+	fmt.Printf("usage: \n %s pull [[URL]/[REPO]/[ITEM][:TAG]]  DATAPOOL[://DIR]  [--destname]\n", os.Args[0])
 	fmt.Println("  --destname, -d = name  indicates the name that tag will be stored as")
 }
