@@ -429,6 +429,7 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	rw.Header().Set("Source-FileName", stagdetail)
+	log.Info("transfering", filepathname)
 	http.ServeFile(rw, r, filepathname)
 
 	resp, _ := json.Marshal(msg)
@@ -476,15 +477,6 @@ func init() {
 		DefaultServer = srv
 	}
 
-	/*	var err error
-		logFile, err = os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		} else {
-
-			log.SetOutput(logFile)
-		}
-
-		log.Println("This is a test log entry")
-	*/
+	log.SetLogLevel(log.LOG_LEVEL_INFO | log.LOG_LEVEL_FATAL | log.LOG_LEVEL_ERROR |
+		log.LOG_LEVEL_WARN | log.LOG_LEVEL_DEBUG | log.LOG_LEVEL_TRACE)
 }

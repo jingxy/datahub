@@ -114,13 +114,13 @@ func Infof(format string, a ...interface{}) {
 
 func Trace(a ...interface{}) {
 	if defaultLogLevel&LOG_LEVEL_TRACE != 0 {
-		log.Print(KWHT+"[TRACE] "+KNRM+trace(), fmt.Sprintln(a...))
+		log.Print(KMAG+"[TRACE] "+KNRM+trace(), fmt.Sprintln(a...))
 	}
 }
 
 func Tracef(format string, a ...interface{}) {
 	if defaultLogLevel&LOG_LEVEL_TRACE != 0 {
-		log.Print(KWHT+"[TRACE] "+KNRM+trace(), fmt.Sprintf(format, a...))
+		log.Print(KMAG+"[TRACE] "+KNRM+trace(), fmt.Sprintf(format, a...))
 	}
 }
 func Debug(a ...interface{}) {
