@@ -34,10 +34,23 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	p.Repository = ps.ByName("repo")
 	p.Dataitem = ps.ByName("item")
-	if exist := CheckDataPoolExist(p.Datapool); exist == false {
-		strret = p.Datapool + " not found. " + p.Tag + " will be pull into " + g_strDpPath + p.ItemDesc
+
+	alItemdesc, err := GetItemDesc(p.Repository, p.Dataitem)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	if len(alItemdesc) != 0 && p.ItemDesc != alItemdesc {
+		p.ItemDesc = alItemdesc
+	} else if len(p.ItemDesc) == 0 && len(alItemdesc) == 0 {
+		p.ItemDesc = p.Repository + "_" + p.Dataitem
+	}
+
+	if dpconn := GetDataPoolDpconn(p.Datapool); len(dpconn) == 0 {
+		strret = p.Datapool + " not found. " + p.Tag + " will be pull into " + g_strDpPath + "/" + p.ItemDesc
 	} else {
-		strret = p.Repository + "/" + p.Dataitem + "/" + p.Tag + " will be pull into " + p.Datapool + "/" + p.ItemDesc
+		strret = p.Repository + "/" + p.Dataitem + "/" + p.Tag + " will be pull into " + dpconn + "/" + p.ItemDesc
 	}
 
 	url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag
@@ -158,10 +171,10 @@ func download(url string, p ds.DsPull) (int64, error) {
 		return 0, err
 	}
 	defer resp.Body.Close()
-	fname := resp.Header.Get("Source-Filename")
-	if len(fname) > 0 {
-		p.DestName = fname
-	}
+	//fname := resp.Header.Get("Source-Filename")
+	//if len(fname) > 0 {
+	//	p.DestName = fname
+	//}
 
 	n, err := io.Copy(out, resp.Body)
 	if err != nil {

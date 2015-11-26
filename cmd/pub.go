@@ -20,9 +20,10 @@ const (
 )
 
 func Pub(needlogin bool, args []string) (err error) {
-	usage := "usage: datahub pub repository/dataitem DPNAME/ITEMDESC? \n\t datahub pub repository/dataitem:tag --detail=?"
+	usage := "usage: datahub pub repository/dataitem DPNAME/ITEMDESC \n\t datahub pub repository/dataitem:tag TAGDETAIL"
 	if len(args) < 2 {
-		fmt.Println(usage)
+		//fmt.Println(usage)
+		pubUsage()
 		return errors.New("args len error!")
 	}
 	pub := ds.PubPara{}
@@ -30,15 +31,18 @@ func Pub(needlogin bool, args []string) (err error) {
 	var repo, item, tag, argfi, argse string
 	f := mflag.NewFlagSet("pub", mflag.ContinueOnError)
 	//f.StringVar(&pub.Datapool, []string{"-datapool", "p"}, "", "datapool name")
-	f.StringVar(&pub.Accesstype, []string{"-accesstype", "t"}, "", "dataitem accesstype, private or public")
+	f.StringVar(&pub.Accesstype, []string{"-accesstype", "t"}, "private", "dataitem accesstype, private or public")
 	f.StringVar(&pub.Comment, []string{"-comment", "m"}, "", "comments")
 	//f.StringVar(&pub.Detail, []string{"-detail", "d"}, "", "tag detail ,for example file name")
 	f.Usage = pubUsage
 
-	if err = f.Parse(args); err != nil {
+	if err = f.Parse(args[2:]); err != nil {
 		//fmt.Println("parse parameter error")
 		return err
 	}
+
+	//fmt.Println(pub.Accesstype)
+	//fmt.Println(pub.Comment)
 	if len(args[0]) == 0 || len(args[1]) == 0 {
 		fmt.Println(usage)
 		return errors.New("need item or tag error!")
@@ -68,8 +72,8 @@ func Pub(needlogin bool, args []string) (err error) {
 			pub.ItemDesc = se[1]
 			err = PubItem(repo, item, pub, args)
 		} else {
-			fmt.Println("input DPNAME/ITEMDESC when publish dataitem.")
-			err = errors.New("input DPNAME/ITEMDESC when publish dataitem.")
+			fmt.Println("please input DPNAME/ITEMDESC when you publish dataitem.")
+			err = errors.New("please input DPNAME/ITEMDESC when you publish dataitem.")
 		}
 	} else if l == 2 {
 		item = sptag[0]
@@ -166,10 +170,8 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 }
 
 func pubUsage() {
-	fmt.Printf("usage: \n %s pub REPO/DATAITEM --datapool=?, --accesstype=?\n", os.Args[0])
-	fmt.Println("  --datapool        Specify the datapool that contains the repo/dataitem")
-	fmt.Println("  -t, --accesstype  Specify the access type of the dataitem:public or private, default private")
-	fmt.Printf(" %s pub REPO/DATAITEM:Tag --detail=?\n", os.Args[0])
-	fmt.Println("  --detail          Specify the filename of the tag")
-	fmt.Println("  --comment         Comments about the item or tag")
+	fmt.Printf("usage: \n %s pub REPO/DATAITEM  DPNAME/ITEMDESC, --accesstype=?\n", os.Args[0])
+	fmt.Println("  --accesstype,-t   Specify the access type of the dataitem:public or private, default private")
+	fmt.Printf(" %s pub REPO/DATAITEM:Tag TAGDETAIL\n", os.Args[0])
+	fmt.Println("  --comment,-m      Comments about the item or tag")
 }

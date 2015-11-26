@@ -58,7 +58,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				log.Println(sdpDirName)
 				msg.Msg = err.Error()
 			} else {
-				msg.Msg = fmt.Sprintf("OK. dp:%s total path:%s", reqJson.Name, sdpDirName)
+				msg.Msg = fmt.Sprintf("dp create success. dp:%s total path:%s", reqJson.Name, sdpDirName)
 				reqJson.Conn = strings.TrimRight(reqJson.Conn, "/")
 				sql_dp_insert := fmt.Sprintf(`insert into DH_DP (DPID, DPNAME, DPTYPE, DPCONN, STATUS)
 					values (null, '%s', '%s', '%s', 'A')`, reqJson.Name, reqJson.Type, reqJson.Conn)
