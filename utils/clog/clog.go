@@ -23,16 +23,27 @@ var (
 	KWHT = "\x1B[37m"
 )
 
-var (
-	LOG_LEVEL_INFO  = 1
-	LOG_LEVEL_DEBUG = 1 << 1
-	LOG_LEVEL_TRACE = 1 << 2
-	LOG_LEVEL_WARN  = 1 << 3
-	LOG_LEVEL_ERROR = 1 << 4
-	LOG_LEVEL_FATAL = 1 << 5
+const (
+	LOG_LEVEL_NONE = iota
+	LOG_LEVEL_FATAL
+	LOG_LEVEL_ERROR
+	LOG_LEVEL_WARN
+	LOG_LEVEL_INFO
+	LOG_LEVEL_TRACE
+	LOG_LEVEL_DEBUG
 )
 
-var defaultLogLevel = LOG_LEVEL_INFO | LOG_LEVEL_FATAL | LOG_LEVEL_ERROR | LOG_LEVEL_WARN
+var logEnv = map[string]int{
+	"none":  LOG_LEVEL_NONE,
+	"fatal": LOG_LEVEL_FATAL,
+	"error": LOG_LEVEL_ERROR,
+	"warn":  LOG_LEVEL_WARN,
+	"info":  LOG_LEVEL_INFO,
+	"trace": LOG_LEVEL_TRACE,
+	"debug": LOG_LEVEL_DEBUG,
+}
+
+var logLevel = LOG_LEVEL_INFO
 var logfileFd *os.File
 
 func trace() string {
@@ -47,11 +58,11 @@ func trace() string {
 }
 
 func SetLogLevel(level int) {
-	defaultLogLevel = level
+	logLevel = level
 }
 
 func GetLogLevel() (level int) {
-	return defaultLogLevel
+	return logLevel
 }
 
 func SetLogFile(logfile string) {
@@ -76,87 +87,113 @@ func SetOutput(w io.Writer) {
 }
 
 func Error(a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_ERROR != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_ERROR {
 		log.Print(KRED+"[ERROR] "+KNRM+trace(), fmt.Sprintln(a...))
 	}
 }
 
 func Errorf(format string, a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_ERROR != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_ERROR {
 		log.Print(KRED+"[ERROR] "+KNRM+trace(), fmt.Sprintf(format, a...))
 	}
 }
 
 func Fatal(a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_FATAL != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_FATAL {
 		log.Print(KRED+KBLD+"[FATAL] "+KNRM+trace(), fmt.Sprintln(a...))
 		os.Exit(1)
 	}
 }
+
 func Fatalf(format string, a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_FATAL != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_FATAL {
 		log.Print(KRED+KBLD+"[FATAL] "+KNRM+trace(), fmt.Sprintf(format, a...))
 		os.Exit(1)
 	}
 }
 
 func Info(a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_INFO != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_INFO {
 		log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintln(a...))
 	}
 }
 
 func Infof(format string, a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_INFO != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_INFO {
 		log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
 	}
 }
 
 func Trace(a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_TRACE != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_TRACE {
 		log.Print(KMAG+"[TRACE] "+KNRM+trace(), fmt.Sprintln(a...))
 	}
 }
 
 func Tracef(format string, a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_TRACE != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_TRACE {
 		log.Print(KMAG+"[TRACE] "+KNRM+trace(), fmt.Sprintf(format, a...))
 	}
 }
 func Debug(a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_DEBUG != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_DEBUG {
 		log.Print(KBLU+"[DEBUG] "+KNRM+trace(), fmt.Sprintln(a...))
 	}
 }
 
 func Debugf(format string, a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_DEBUG != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_DEBUG {
 		log.Print(KBLU+"[DEBUG] "+KNRM+trace(), fmt.Sprintf(format, a...))
 	}
 }
 
 func Warn(a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_WARN != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_WARN {
 		log.Print(KYEL+"[WARNING] "+KNRM+trace(), fmt.Sprintln(a...))
 	}
 }
 
 func Warnf(format string, a ...interface{}) {
-	if defaultLogLevel&LOG_LEVEL_WARN != 0 {
+	checkLogEnv()
+	if logLevel >= LOG_LEVEL_WARN {
 		log.Print(KYEL+"[WARNING] "+KNRM+trace(), fmt.Sprintf(format, a...))
 	}
 }
 
 func Println(a ...interface{}) {
-	log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintln(a...))
+	Info(a...)
 }
 
 func Printf(format string, a ...interface{}) {
-	log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
+	Infof(format, a...)
 }
 
-func test() {
-	Warn("test...")
+func checkLogEnv() {
+	lvl := os.Getenv("DATAHUB_LOGLEVEL")
+	if len(lvl) > 0 {
+		lvl = strings.ToLower(lvl)
+		if level, ok := logEnv[lvl]; ok {
+			if logLevel != level {
+				fmt.Printf("set log level to %v[%v]\n", lvl, level)
+				logLevel = level
+			}
+		}
+	}
+}
+
+func init() {
+	checkLogEnv()
 }
 
 /*

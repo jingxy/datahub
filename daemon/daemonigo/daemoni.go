@@ -38,7 +38,7 @@ var Umask = 027
 
 // Application name to daemonize.
 // Used for printing in default daemon actions.
-var AppName = "daemon"
+var AppName = "datahub daemon"
 
 // Path to application executable.
 // Used only for default start/restart actions.
@@ -47,6 +47,7 @@ var AppName = "daemon"
 // Absolute or relative path from working directory to PID file.
 
 var PidFile = "/var/run/datahub.pid"
+var logfile = "/var/log/datahub.log"
 
 // Pointer to PID file to keep file-lock alive.
 var pidFile *os.File
@@ -56,7 +57,7 @@ var pidFile *os.File
 func Daemonize() (isDaemon bool, err error) {
 	const errLoc = "daemonigo.Daemonize()"
 	isDaemon = os.Getenv(EnvVarName) == EnvVarValue
-	log.Println("IsDaemon: ", isDaemon)
+	//log.Println("IsDaemon: ", isDaemon)
 	if WorkDir != "" {
 		if err = os.Chdir(WorkDir); err != nil {
 			err = fmt.Errorf(
@@ -67,6 +68,7 @@ func Daemonize() (isDaemon bool, err error) {
 		}
 	}
 	if isDaemon {
+		log.SetLogFile(logfile)
 		oldmask := syscall.Umask(int(Umask))
 		defer syscall.Umask(oldmask)
 		if _, err = syscall.Setsid(); err != nil {
@@ -160,7 +162,7 @@ func UnlockPidFile() {
 // Checks status of daemonized process.
 // Can be used in daemon actions to perate with daemonized process.
 func Status() (isRunning bool, pr *os.Process, e error) {
-	const errLoc = "daemonigo.Status()"
+	const errLoc = "daemon.Status()"
 	var (
 		err  error
 		file *os.File
@@ -230,7 +232,7 @@ func StartCommand() (*exec.Cmd, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("exec path", path, Token)
+	//log.Println("exec path", path, Token)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: failed to resolve absolute path of %s, reason -> %s",

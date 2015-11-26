@@ -25,6 +25,7 @@ var (
 )
 
 func HeartBeat() {
+
 	for {
 		heartbeatbody := Beatbody{Daemonid: DaemonID}
 		heartbeatbody.Entrypoint = append(heartbeatbody.Entrypoint, EntryPoint)

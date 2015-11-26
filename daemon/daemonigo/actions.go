@@ -2,7 +2,6 @@ package daemonigo
 
 import (
 	"fmt"
-	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"os"
 )
 
@@ -14,7 +13,8 @@ var actions = map[string]func(){
 		case err != nil:
 			printStatusErr(err)
 		case isRunning:
-			log.Error(AppName + " is already started and running now")
+			fmt.Println(AppName, "is already in running.")
+			//log.Error(AppName + " is already started and running now")
 		default:
 			start()
 		}
@@ -78,7 +78,7 @@ func stop(process *os.Process) {
 // Helper function which wraps Start() with printing
 // for using in daemon default actions.
 func start() {
-	log.Printf("Starting %s...\n", AppName)
+	fmt.Printf("Starting %s...\n", AppName)
 	if err := Start(1); err != nil {
 		failed(err)
 	} else {

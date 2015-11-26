@@ -21,9 +21,9 @@ import (
 )
 
 var (
-	g_ds    = new(ds.Ds)
-	logfile = "/var/log/datahub.log"
-	wg      sync.WaitGroup
+	g_ds = new(ds.Ds)
+
+	wg sync.WaitGroup
 )
 
 const (
@@ -192,7 +192,7 @@ func isDirExists(path string) bool {
 		log.Println(err.Error())
 		return os.IsExist(err)
 	} else {
-		log.Println(fi.IsDir())
+		//log.Println(fi.IsDir())
 		return fi.IsDir()
 	}
 	//panic("not reached")
@@ -208,8 +208,7 @@ func isFileExists(file string) bool {
 }
 
 func RunDaemon() {
-	log.SetLogFile(logfile)
-	log.Println("Run daemon..")
+	//fmt.Println("Run daemon..")
 	// Daemonizing echo server application.
 	switch isDaemon, err := daemonigo.Daemonize(); {
 	case !isDaemon:
@@ -284,28 +283,38 @@ func RunDaemon() {
 
 		stop := make(chan os.Signal)
 		signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
 		select {
 		case signal := <-stop:
 			log.Printf("Got signal:%v", signal)
 		}
 
 		sl.Stop()
-		p2psl.Stop()
+		if len(DaemonID) > 0 {
+			p2psl.Stop()
+		}
 
 	}()
 
-	go startP2PServer()
-	go HeartBeat()
+	if len(DaemonID) > 0 {
+		go startP2PServer()
+		go HeartBeat()
+	} else {
+		log.Error("no daemonid specificed.")
+		fmt.Println("You don't have a daemonid specificed.")
+	}
 
 	/*
 		wg.Add(1)
 		defer wg.Done()
 	*/
-	log.Info("starting listener...")
+	log.Info("starting daemon listener...")
 	server.Serve(sl)
-	log.Info("Stopping listener...")
+	log.Info("Stopping daemon listener...")
 
-	wg.Wait()
+	if len(DaemonID) > 0 {
+		wg.Wait()
+	}
 
 	daemonigo.UnlockPidFile()
 	g_ds.Db.Close()
@@ -343,7 +352,6 @@ func startP2PServer() {
 	p2pserver.Serve(p2psl)
 	log.Info("p2p server stop")
 
-	//wg.Wait()
 }
 
 func p2pHealthyCheckHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -485,6 +493,5 @@ func init() {
 		DefaultServer = srv
 	}
 
-	log.SetLogLevel(log.LOG_LEVEL_INFO | log.LOG_LEVEL_FATAL | log.LOG_LEVEL_ERROR |
-		log.LOG_LEVEL_WARN | log.LOG_LEVEL_DEBUG | log.LOG_LEVEL_TRACE)
+	log.SetLogLevel(log.LOG_LEVEL_INFO)
 }
