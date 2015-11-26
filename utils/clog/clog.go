@@ -172,11 +172,11 @@ func Warnf(format string, a ...interface{}) {
 }
 
 func Println(a ...interface{}) {
-	Info(a...)
+	log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintln(a...))
 }
 
 func Printf(format string, a ...interface{}) {
-	Infof(format, a...)
+	log.Print(KGRN+"[INFO] "+KNRM+trace(), fmt.Sprintf(format, a...))
 }
 
 func checkLogEnv() {
