@@ -439,13 +439,14 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	filepathname := sdpconn + "/" + itemdesc + "/" + stagdetail
 	log.Println("filename:", filepathname)
 	if exists := isFileExists(filepathname); !exists {
+		log.Error("1 file not found", filepathname)
 		filepathname = "/" + sdpconn + "/" + sdpname + "/" + sRepoName + "/" + sDataItem + "/" + stagdetail
 		if exists := isFileExists(filepathname); !exists {
 			//filepathname = "/" + sdpconn + "/" + stagdetail
 			//if exists := isFileExists(filepathname); !exists {
 			//	filepathname = "/var/lib/datahub/" + sTag
 			//	if exists := isFileExists(filepathname); !exists {
-			log.Println(" filename:", filepathname)
+			log.Error("2 filename not found:", filepathname)
 			//http.NotFound(rw, r)
 			msg.Msg = fmt.Sprintf("tag:%s not found", sTag)
 			resp, _ := json.Marshal(msg)
