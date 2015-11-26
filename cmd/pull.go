@@ -53,14 +53,14 @@ func Pull(login bool, args []string) (err error) {
 	}
 
 	//get datapool and itemdesc
-	if store := strings.Split(strings.Trim(args[1], "/"), "/"); len(store) == 1 {
+	if store := strings.Split(strings.Trim(args[1], "/"), "://"); len(store) == 1 {
 		dstruc.Datapool = store[0]
 		dstruc.ItemDesc = repo + "_" + item
 	} else if len(store) == 2 {
 		dstruc.Datapool = store[0]
-		dstruc.ItemDesc = store[1]
+		dstruc.ItemDesc = strings.Trim(store[1], "/")
 		if len(dstruc.Datapool) == 0 {
-			fmt.Println("DATAPOOL/ITEMDESC are required!")
+			fmt.Println("DATAPOOL://ITEMDESC are required!")
 			pullUsage()
 			return
 		}
@@ -68,7 +68,7 @@ func Pull(login bool, args []string) (err error) {
 			dstruc.ItemDesc = repo + "_" + item
 		}
 	} else {
-		fmt.Println("DATAPOOL/ITEMDESC format error!")
+		fmt.Println("DATAPOOL://ITEMDESC format error!")
 		pullUsage()
 		return
 	}

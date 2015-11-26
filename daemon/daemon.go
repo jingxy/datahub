@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -53,9 +54,22 @@ func dbinit() {
 	chk(err)
 	g_ds.Db = db
 
-	g_ds.Create(ds.Create_dh_dp)
-	g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
-	g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
+	var RetDhRpdmTagMap string
+	row, err := g_ds.QueryRow(ds.SQLIsExistRpdmTagMap)
+	if err != nil {
+		log.Error("Get Dh_Rpdm_Tag_Map error!")
+		return
+	}
+	row.Scan(&RetDhRpdmTagMap)
+	if len(RetDhRpdmTagMap) == 0 {
+		g_ds.Create(ds.Create_dh_dp)
+		g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
+		g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
+	} else {
+		if false == strings.Contains(RetDhRpdmTagMap, "TAGID") {
+			UpdateSql04To05()
+		}
+	}
 
 }
 
