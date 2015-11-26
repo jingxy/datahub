@@ -103,21 +103,14 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 }
 
-func dl(uri, entrypoint string, p ds.DsPull) error {
-	var ip string
-	if entrypoint == "" {
-		ip = os.Getenv("DAEMON_IP_PEER")
-	} else {
-		ip = entrypoint
-	}
+func dl(uri, ip string, p ds.DsPull) error {
 
-	fmt.Println(ip)
 	if len(ip) == 0 {
-		ip = "http://54.223.58.0:35800"
+		ip = "http://localhost:65535"
 	}
 
 	target := ip + uri
-	fmt.Println(target)
+	log.Println(target)
 	n, err := download(target, p)
 	if err != nil {
 		log.Printf("[%d bytes returned.]\n", n)
