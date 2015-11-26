@@ -207,3 +207,94 @@ func GetItemDesc(Repository, Dataitem string) (ItemDesc string, err error) {
 		return ItemDesc, err
 	}
 }
+
+func CreateTable() (err error) {
+	_, err = g_ds.Create(ds.Create_dh_dp)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return
+}
+
+func UpdateSql04To05() (err error) {
+	//UPDATE DH_DP
+	TrimRightDpconn := `update DH_DP set DPCONN =substr(DPCONN,0,length(DPCONN)) where DPCONN like '%/';`
+	_, err = g_ds.Update(TrimRightDpconn)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	UpDhDp := `UPDATE DH_DP SET DPCONN=DPCONN||"/"||DPNAME;`
+	_, err = g_ds.Update(UpDhDp)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	//UPDATE DH_DP_RPDM_MAP
+	RenameDpRpdmMap := "ALTER TABLE DH_DP_RPDM_MAP RENAME TO OLD_DH_DP_RPDM_MAP;"
+	_, err = g_ds.Exec(RenameDpRpdmMap)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	InsertDpRpdmMap := `INSERT INTO DH_DP_RPDM_MAP(RPDMID, REPOSITORY, DATAITEM, DPID, ITEMDESC
+						, PUBLISH, CREATE_TIME, STATUS) 
+						SELECT RPDMID, REPOSITORY, DATAITEM, DPID, REPOSITORY||"/"||DATAITEM, 
+						PUBLISH, CREATE_TIME, 'A' FROM OLD_DH_DP_RPDM_MAP;`
+	DropOldDpRpdmMap := `DROP TABLE OLD_DH_DP_RPDM_MAP;`
+	_, err = g_ds.Insert(InsertDpRpdmMap)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = g_ds.Drop(DropOldDpRpdmMap)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	//UPDATE DH_RPDM_TAG_MAP
+	RenameTagMap := "ALTER TABLE DH_RPDM_TAG_MAP RENAME TO OLD_DH_RPDM_TAG_MAP;"
+	_, err = g_ds.Exec(RenameTagMap)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	InsertTagMap := `INSERT INTO DH_RPDM_TAG_MAP(TAGID, TAGNAME, RPDMID, DETAIL, CREATE_TIME, STATUS) 
+					SELECT NULL, TAGNAME, RPDMID, DETAIL, CREATE_TIME, 'A' FROM OLD_DH_RPDM_TAG_MAP;`
+	DropOldTagMap := `DROP TABLE OLD_DH_RPDM_TAG_MAP;`
+	_, err = g_ds.Insert(InsertTagMap)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	_, err = g_ds.Drop(DropOldTagMap)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	log.Info("update db successfully!")
+	return
+}

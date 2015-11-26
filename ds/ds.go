@@ -83,6 +83,8 @@ type Ds struct {
 	Db *sql.DB
 }
 
+const SQLIsExistRpdmTagMap string = `select sql from sqlite_master where tbl_name='DH_RPDM_TAG_MAP' and type='table';`
+
 const Create_dh_dp string = `CREATE TABLE IF NOT EXISTS 
     DH_DP ( 
        DPID    INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -100,7 +102,7 @@ const Create_dh_dp_repo_ditem_map string = `CREATE TABLE IF NOT EXISTS
         REPOSITORY   VARCHAR(128), 
         DATAITEM     VARCHAR(128), 
         DPID         INTEGER, 
-        ITEMDESC     VARCHAR(128),
+        ITEMDESC     VARCHAR(256),
         PUBLISH      CHAR(2), 
         CREATE_TIME  DATETIME,
         STATUS       CHAR(2)
@@ -114,7 +116,7 @@ const Create_dh_repo_ditem_tag_map string = `CREATE TABLE IF NOT EXISTS
     	TAGID        INTEGER PRIMARY KEY AUTOINCREMENT,
         TAGNAME      VARCHAR(128),
         RPDMID       INTEGER,
-        DETAIL       VARCHAR(128),
+        DETAIL       VARCHAR(256),
         CREATE_TIME  DATETIME,
         STATUS       CHAR(2)
     );`
@@ -178,5 +180,9 @@ func (p *Ds) Create(cmd string) (interface{}, error) {
 }
 
 func (p *Ds) Drop(cmd string) (interface{}, error) {
+	return execute(p, cmd)
+}
+
+func (p *Ds) Exec(cmd string) (interface{}, error) {
 	return execute(p, cmd)
 }

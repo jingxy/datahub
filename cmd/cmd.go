@@ -53,6 +53,7 @@ const (
 	ErrorServiceUnavailable
 	ErrorFileNotExist
 	ErrorTagAlreadyExist
+	ErrorDatapoolNotExits
 )
 
 var Cmd = []Command{
