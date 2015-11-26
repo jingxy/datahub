@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/julienschmidt/httprouter"
@@ -34,6 +35,17 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	p.Repository = ps.ByName("repo")
 	p.Dataitem = ps.ByName("item")
+
+	dpexist := CheckDataPoolExist(p.Datapool)
+	if dpexist == false {
+		e := fmt.Sprintf("Datapool:%s not exist!", p.Datapool)
+		log.Error(e)
+		msgret := ds.Result{Code: cmd.ErrorDatapoolNotExits, Msg: e}
+		resp, _ := json.Marshal(msgret)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(resp)
+		return
+	}
 
 	alItemdesc, err := GetItemDesc(p.Repository, p.Dataitem)
 	if err != nil {
@@ -123,19 +135,27 @@ func download(url string, p ds.DsPull) (int64, error) {
 	var destfilename string
 	dpexist := CheckDataPoolExist(p.Datapool)
 	if dpexist == false {
-		os.MkdirAll(g_strDpPath+"/"+p.ItemDesc, 0777)
-		destfilename = g_strDpPath + "/" + p.ItemDesc + "/" + p.DestName
+		//os.MkdirAll(g_strDpPath+"/"+p.ItemDesc, 0777)
+		//destfilename = g_strDpPath + "/" + p.ItemDesc + "/" + p.DestName
+		e := fmt.Sprintf("datapool:%s not exist!", p.Datapool)
+		log.Error(e)
+		err = errors.New(e)
+		return 0, err
 	} else {
 		dpconn := GetDataPoolDpconn(p.Datapool)
 		if len(dpconn) == 0 {
-			os.MkdirAll(g_strDpPath+"/"+p.ItemDesc, 0777)
-			destfilename = g_strDpPath + "/" + p.ItemDesc + "/" + p.DestName
+			//os.MkdirAll(g_strDpPath+"/"+p.ItemDesc, 0777)
+			//destfilename = g_strDpPath + "/" + p.ItemDesc + "/" + p.DestName
+			e := fmt.Sprintf("dpconn is null! datapool:%s ", p.Datapool)
+			log.Error(e)
+			err = errors.New(e)
+			return 0, err
 		} else {
 			os.MkdirAll(dpconn+"/"+p.ItemDesc, 0777)
 			destfilename = dpconn + "/" + p.ItemDesc + "/" + p.DestName
 		}
 	}
-	fmt.Println(destfilename)
+	log.Println("destfilename:", destfilename)
 	out, err = os.OpenFile(destfilename, os.O_RDWR|os.O_CREATE, 0644)
 
 	if err != nil {
