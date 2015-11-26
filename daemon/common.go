@@ -235,7 +235,7 @@ func UpdateSql04To05() (err error) {
 		log.Error(err)
 		return err
 	}
-	UpDhDp := `UPDATE DH_DP SET DPCONN=DPCONN||"/"||DPNAME`
+	UpDhDp := `UPDATE DH_DP SET DPCONN=DPCONN||"/"||DPNAME;`
 	_, err = g_ds.Update(UpDhDp)
 	if err != nil {
 		log.Error(err)
@@ -295,5 +295,6 @@ func UpdateSql04To05() (err error) {
 		log.Error(err)
 		return err
 	}
+	log.Info("update db successfully!")
 	return
 }
