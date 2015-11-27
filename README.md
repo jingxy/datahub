@@ -173,10 +173,11 @@ $
 #### 3. pull命令
 
 ##### 3.1. 拉取某个item的tag
-
+- pull一个tag，需指定$DATAPOOL, 可再指定$DATAPOOL下的子目录$LOCATION，默认下载到$DATAPOOL://$REPO_$ITEM. 
+可选参数--destname, -d 命名下载的tag
 
 ```
-datahub pull $REPO/$ITEM:$TAG $DATAPOOL[://$LOCATION]
+datahub pull $REPO/$ITEM:$TAG $DATAPOOL[://$LOCATION] [--destname，-d]
 ```
 输出
 ```
@@ -220,7 +221,7 @@ $
 ##### 5.1. 发布一个DataItem
 
 ```
-datahub pub $REPOSITORY/$DATAITEM $DATAPOOL://$LOCATION --accesstype=public [private]  --comment=" "
+datahub pub $REPOSITORY/$DATAITEM $DATAPOOL://$LOCATION --accesstype=public [private]  [--comment, -m]
 ```
 输出
 ```
