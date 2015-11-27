@@ -2,7 +2,7 @@ package ds
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/asiainfoLDP/datahub/utils/mattn/go-sqlite3"
 	"log"
 )
 
