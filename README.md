@@ -213,10 +213,9 @@ $
 
 #### 5. pub相关命令
 -pub分为发布一个DataItem和发布一个Tag。
-发布DataItem必须指定DATAPOOL和DATAPOOL下的子路径LOCATION , 
-可选参数 --accesstype, -t= 指定DataItem属性：public, private, 默认private
-发布Tag必须指定TAGDETAIL , 用来指定Tag对应文件名，该文件必须存在于$DATAPOOL://$LOCATION内
-可选参数--comment, -m= ,描述DataItem或者Tag
+- 发布DataItem必须指定DATAPOOL和DATAPOOL下的子路径LOCATION ,  可选参数 --accesstype, -t= 指定DataItem属性：public, private, 默认private
+- 发布Tag必须指定TAGDETAIL , 用来指定Tag对应文件名，该文件必须存在于$DATAPOOL://$LOCATION内
+- 可选参数--comment, -m= ,描述DataItem或者Tag
 
 ##### 5.1. 发布一个DataItem
 
