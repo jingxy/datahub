@@ -277,7 +277,7 @@ func RunDaemon() {
 	router.DELETE("/ep", epDeleteHandler)
 
 	router.GET("/repositories/:repo/:item/:tag", repoTagHandler)
-	router.GET("/repositories/:repo/:item", repoDetailHandler)
+	router.GET("/repositories/:repo/:item", repoItemHandler)
 	router.GET("/repositories/:repo", repoRepoNameHandler)
 	router.GET("/repositories", repoHandler)
 	router.GET("/subscriptions", subsHandler)
