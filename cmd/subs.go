@@ -23,10 +23,12 @@ func Subs(login bool, args []string) (err error) {
 	}
 
 	uri := "/subscriptions"
+
 	if len(args) == 1 {
 		uri = "/repositories"
 		uri = uri + "/" + args[0]
 		itemDetail = true
+		return Repo(login, args) //deal  repo/item:tag by repo cmd
 	}
 
 	resp, err := commToDaemon("GET", uri, nil)
@@ -71,10 +73,10 @@ func subsResp(detail bool, respbody []byte, repoitem string) {
 		if err != nil {
 			panic(err)
 		}
-		n, _ := fmt.Printf("%s\t%s\t%s\n", "REPOSITORY/ITEM[:TAG]", "COMMENT", "UPDATETIME")
+		n, _ := fmt.Printf("%s\t%s\t%s\n", "REPOSITORY/ITEM[:TAG]", "UPDATETIME", "COMMENT")
 		printDash(n + 12)
 		for _, tag := range subs.Taglist {
-			fmt.Printf("%s:%-8s\t%s\t%s\n", repoitem, tag.Tag, tag.Comment, tag.Optime)
+			fmt.Printf("%s:%-8s\t%s\t%s\n", repoitem, tag.Tag, tag.Optime, tag.Comment)
 		}
 	} else {
 		subs := []ds.Data{}
