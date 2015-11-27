@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
-	"github.com/julienschmidt/httprouter"
+	"github.com/asiainfoLDP/datahub/utils/julienschmidt/httprouter"
 	"io/ioutil"
 	"net/http"
 )
