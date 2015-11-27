@@ -43,6 +43,11 @@ type DataItem struct {
 	Repository_name string `json:"repname,omitempty"`
 	Dataitem_name   string `json:"dataitem_name,omitempty"`
 }
+type Response struct {
+	Code int         `json:"code,omitempty"`
+	Msg  string      `json:"msg,omitempty"`
+	Data interface{} `json:"data,omitempty"`
+}
 
 type Tag struct {
 	Dataitem_id int64  `json:"dataitem_id,omitempty"`

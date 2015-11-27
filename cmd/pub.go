@@ -141,13 +141,13 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 		result := ds.Result{}
 		err = json.Unmarshal(body, &result)
 		if err != nil {
-			fmt.Println("Pub error. ", err.Error())
+			fmt.Println("Pub error.", err)
 			return err
 		} else {
 			if result.Code == 0 {
-				fmt.Println("Pub success, ", result.Msg)
+				fmt.Println("Pub success,", result.Msg)
 			} else {
-				fmt.Println("Error code: ", result.Code, " Msg: ", result.Msg)
+				fmt.Printf("ERROR[%v] %v\n", result.Code, result.Msg)
 			}
 		}
 	} else if resp.StatusCode == 401 {
@@ -160,10 +160,10 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 		result := ds.Result{}
 		err = json.Unmarshal(body, &result)
 		if err != nil {
-			fmt.Println("Pub error. ", err.Error())
+			fmt.Println("Pub error.", err)
 			return err
 		} else {
-			fmt.Println("Http response code: ", resp.StatusCode, "  Error Code: ", result.Code, "  Msg: ", result.Msg)
+			fmt.Printf("ERROR[%v] %v\n", result.Code, result.Msg)
 		}
 	}
 	return err
@@ -172,6 +172,6 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 func pubUsage() {
 	fmt.Printf("usage: \n %s pub REPO/DATAITEM  DPNAME://ITEMDESC, --accesstype=?\n", os.Args[0])
 	fmt.Println("  --accesstype,-t   Specify the access type of the dataitem:public or private, default private")
-	fmt.Printf(" %s pub REPO/DATAITEM:Tag TAGDETAIL\n", os.Args[0])
+	fmt.Printf("%s pub REPO/DATAITEM:Tag TAGDETAIL\n", os.Args[0])
 	fmt.Println("  --comment,-m      Comments about the item or tag")
 }

@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
@@ -297,4 +298,15 @@ func UpdateSql04To05() (err error) {
 	}
 	log.Info("update db successfully!")
 	return
+}
+
+func buildResp(code int, msg string, data interface{}) (body []byte, err error) {
+	r := ds.Response{}
+
+	r.Code = code
+	r.Msg = msg
+	r.Data = data
+
+	return json.Marshal(r)
+
 }
