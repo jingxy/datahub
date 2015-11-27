@@ -71,10 +71,10 @@ func subsResp(detail bool, respbody []byte, repoitem string) {
 		if err != nil {
 			panic(err)
 		}
-		n, _ := fmt.Printf("%s\t%s\n", "REPOSITORY/ITEM[:TAG]", "UPDATETIME")
+		n, _ := fmt.Printf("%s\t%s\t%s\n", "REPOSITORY/ITEM[:TAG]", "COMMENT", "UPDATETIME")
 		printDash(n + 12)
 		for _, tag := range subs.Taglist {
-			fmt.Printf("%s:%-8s\t%s\n", repoitem, tag.Tag, tag.Optime)
+			fmt.Printf("%s:%-8s\t%s\t%s\n", repoitem, tag.Tag, tag.Comment, tag.Optime)
 		}
 	} else {
 		subs := []ds.Data{}
