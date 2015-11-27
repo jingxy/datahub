@@ -423,8 +423,8 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	tagrow.Scan(&stagdetail)
 	log.Println("tagdetail", stagdetail)
 	if len(stagdetail) == 0 {
-		log.Println("tag lenth is 0")
-		http.Error(rw, "tag lenth is 0", http.StatusBadRequest)
+		log.Warnf("%s(tag:%s) not found", stagdetail, sTag)
+		http.Error(rw, sTag+" not found", http.StatusNotFound)
 		return
 	}
 

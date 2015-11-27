@@ -36,6 +36,8 @@ Datahub CLI是datahub-client的命令行客户端，用来执行datahub相关命
     - 登录到dataos.io
 - pull      
     - 下载数据
+- pub
+    - 发布数据
 
 ### Datahub Client 命令行使用说明
 ---
@@ -90,7 +92,7 @@ $
 
 ##### 1.3. 创建数据池
 
-- 目前只支持本地目录形式的数据池创建。daemon会有自己的可配置工作目录(默认/var/lib/datahub)，使用参数dpconn指定绝对路径，当没有设定dpconn选项时，会默认创建到daemon的工作目录。
+- 目前只支持本地目录形式的数据池创建。使用参数dpconn指定绝对路径，当没有设定dpconn选项时，会默认创建到/var/lib/datahub。
 
 ```shell
 datahub dp create $DPNAME [--type=$dptype]
@@ -102,18 +104,17 @@ datahub dp create $DPNAME [--type=$dptype]
 ```
 例子
 ```
-$ datahub dp create dp1 --type=file
---conn=/home/daemon/dp1
+$ datahub dp create dp1 --type=file --conn=/home/daemon/dp1
 dp1 created as /home/daemon/dp1
 $
 ```
 
 ##### 1.4. 删除数据池
 
-- 删除数据池不会删除目标数据池已保存的数据。该dp有发布的数据项时，不能被删除。删除是在sqlit中标记状态，不真实删除。
+- 删除数据池不会删除目标数据池已保存的数据。该dp有发布的数据项时，不能被删除。删除是在sqlite中标记状态，不真实删除。
 
 ```
-datahub dp rm $DPNAME [-f]
+datahub dp rm $DPNAME
 输出
 例子
 $ datahub dp rm dp1
@@ -172,10 +173,11 @@ $
 #### 3. pull命令
 
 ##### 3.1. 拉取某个item的tag
-
+- pull一个tag，需指定$DATAPOOL, 可再指定$DATAPOOL下的子目录$LOCATION，默认下载到$DATAPOOL://$REPO_$ITEM. 
+可选参数--destname, -d 命名下载的tag
 
 ```
-datahub pull $REPO/$ITEM[:$TAG] $DATAPOOL
+datahub pull $REPO/$ITEM:$TAG $DATAPOOL[://$LOCATION] [--destname，-d]
 ```
 输出
 ```
@@ -183,7 +185,7 @@ datahub pull $REPO/$ITEM[:$TAG] $DATAPOOL
 ```
 例子
 ```
-$ datahub pull cmcc/beijing:chaoyang dp1
+$ datahub pull cmcc/beijing:chaoyang dp1://cmccbj
 OK.
 $
 ```
@@ -211,14 +213,15 @@ $
 ```
 
 #### 5. pub相关命令
--pub分为发布一个DataItem和发布一个Tag。发布DataItem必带参数：--datapool= , --accesstype=
-发布Tag必带参数：--detail= , 用来描述Tag对应文件名，./表示当前路径；不带路径默认datapool下所属Repository和DataItem的路径
-可选参数--comment= ,描述DataItem或者Tag
+- pub分为发布一个DataItem和发布一个Tag。
+- 发布DataItem必须指定DATAPOOL和DATAPOOL下的子路径LOCATION ,  可选参数 --accesstype, -t= 指定DataItem属性：public, private, 默认private
+- 发布Tag必须指定TAGDETAIL , 用来指定Tag对应文件名，该文件必须存在于$DATAPOOL://$LOCATION内
+- 可选参数--comment, -m= ,描述DataItem或者Tag
 
 ##### 5.1. 发布一个DataItem
 
 ```
-datahub pub $REPOSITORY/$DATAITEM --datapool=$DATAPOOL --accesstype=public [private]
+datahub pub $REPOSITORY/$DATAITEM $DATAPOOL://$LOCATION --accesstype=public [private]  [--comment, -m]
 ```
 输出
 ```
@@ -226,14 +229,14 @@ Pub success,  OK
 ```
 例子
 ```
-$./datahub pub music_1/migu --datapool=mydp --accesstype=public
+$./datahub pub music_1/migu mydp://dirmigu --accesstype=public --comment="migu music desc"
 Pub success,  OK
 ```
 
 ##### 5.2.发布一个Tag
 
 ```
-datahub pub $REPO/$ITEM:$Tag --detail=$path/$file
+datahub pub $REPO/$ITEM:$Tag $TAGDETAIL --comment=" "
 ```
 输出
 ```
@@ -241,7 +244,7 @@ Pub success, OK
 ```
 例子
 ```
-$ datahub pub music_1/migu:migu_user_info --detail=./migu_user_info.txt
+$ datahub pub music_1/migu:migu_user_info migu_user_info.txt
 Pub success, OK
 $
 ```

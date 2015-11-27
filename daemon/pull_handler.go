@@ -21,11 +21,12 @@ type AccessToken struct {
 	Entrypoint    string `json:"entrypoint,omitempty"`
 }
 
+var strret string
+
 func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	log.Println(r.URL.Path + "(pull)\n")
 	result, _ := ioutil.ReadAll(r.Body)
 	p := ds.DsPull{}
-	var strret string
 
 	if err := json.Unmarshal(result, &p); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -62,7 +63,7 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if dpconn := GetDataPoolDpconn(p.Datapool); len(dpconn) == 0 {
 		strret = p.Datapool + " not found. " + p.Tag + " will be pull into " + g_strDpPath + "/" + p.ItemDesc
 	} else {
-		strret = p.Repository + "/" + p.Dataitem + "/" + p.Tag + " will be pull into " + dpconn + "/" + p.ItemDesc
+		strret = p.Repository + "/" + p.Dataitem + ":" + p.Tag + " will be pull into " + dpconn + "/" + p.ItemDesc
 	}
 
 	url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag
@@ -75,35 +76,25 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	} else {
 		url = "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag +
 			"?token=" + token + "&username=" + gstrUsername
-		go dl(url, entrypoint, p)
+
+		chn := make(chan int)
+		go dl(url, entrypoint, p, w, chn)
+		<-chn
 	}
 
 	log.Println(strret)
-	msgret := ds.MsgResp{Msg: strret}
-	resp, _ := json.Marshal(msgret)
-	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
-
 	/*
-		url := "/transaction/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag
-
-		token, entrypoint, err := getAccessToken(url, w)
-		if err != nil {
-			return
-		} else {
-			url = "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag +
-				"?token=" + token + "?username=" + gstrUsername
-		}
-		//fmt.Fprintln(w, url)
-
-		//url := "/pull/" + ps.ByName("repo") + "/" + ps.ByName("item") + "/" + p.Tag
-		//entrypoint := ""
+		msgret := ds.MsgResp{Msg: strret}
+		resp, _ := json.Marshal(msgret)
+		w.WriteHeader(http.StatusOK)
+		w.Write(resp)
 	*/
+
 	return
 
 }
 
-func dl(uri, ip string, p ds.DsPull) error {
+func dl(uri, ip string, p ds.DsPull, w http.ResponseWriter, c chan int) error {
 
 	if len(ip) == 0 {
 		ip = "http://localhost:65535"
@@ -111,7 +102,7 @@ func dl(uri, ip string, p ds.DsPull) error {
 
 	target := ip + uri
 	log.Println(target)
-	n, err := download(target, p)
+	n, err := download(target, p, w, c)
 	if err != nil {
 		log.Printf("[%d bytes returned.]\n", n)
 		log.Println(err)
@@ -120,7 +111,7 @@ func dl(uri, ip string, p ds.DsPull) error {
 }
 
 /*download routine, supports resuming broken downloads.*/
-func download(url string, p ds.DsPull) (int64, error) {
+func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64, error) {
 	log.Printf("we are going to download %s, save to dp=%s,name=%s\n", url, p.Datapool, p.DestName)
 
 	var out *os.File
@@ -172,9 +163,19 @@ func download(url string, p ds.DsPull) (int64, error) {
 	/*Save response body to file only when HTTP 2xx received. TODO*/
 	if err != nil || (resp != nil && resp.StatusCode/100 != 2) {
 		if resp != nil {
-			log.Println("http status code:", resp.StatusCode, err)
+			log.Error("http status code:", resp.StatusCode, err)
 			body, _ := ioutil.ReadAll(resp.Body)
-			log.Println("response Body:", string(body))
+			log.Error("response Body:", string(body))
+
+			msg := string(body)
+			if resp.StatusCode == 416 {
+				msg = destfilename + " has already been downloaded."
+			}
+			r, _ := buildResp(7000+resp.StatusCode, msg, nil)
+
+			w.WriteHeader(resp.StatusCode)
+			w.Write(r)
+			c <- 1
 		}
 		filesize := stat.Size()
 		out.Close()
@@ -188,6 +189,11 @@ func download(url string, p ds.DsPull) (int64, error) {
 	//if len(fname) > 0 {
 	//	p.DestName = fname
 	//}
+
+	r, _ := buildResp(7000, strret, nil)
+	w.WriteHeader(http.StatusOK)
+	w.Write(r)
+	c <- 1
 
 	n, err := io.Copy(out, resp.Body)
 	if err != nil {
