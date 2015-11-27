@@ -248,11 +248,28 @@ $ datahub pub music_1/migu:migu_user_info migu_user_info.txt
 Pub success, OK
 $
 ```
-#### 6. help命令
+
+#### 6. repo命令
+
+##### 6.1. 查询自己创建的和具有写权限的所有repository
+
+```
+datahub repo 
+```
+输出
+```
+REPOSITORY
+--------------------
+Location_information	                
+Internet_stats  
+Base_station_location
+```
+
+#### 7. help命令
 
 - help提供datahub所有命令的帮助信息。
 
-##### 6.1. 列出帮助
+##### 7.1. 列出帮助
 
 ```
 datahub help [$CMD] [$SUBCMD]
