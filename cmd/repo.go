@@ -122,10 +122,10 @@ func repoResp(icmd int, respbody []byte, repo, item, tag string) {
 		if err != nil {
 			panic(err)
 		}
-		n, _ := fmt.Printf("%-16s\t%-16s\t%-16s\n", "REPOSITORY", "UPDATETIME", "COMMENT")
-		printDash(n + 12)
+		n, _ := fmt.Printf("%-16s\n", "REPOSITORY") //, "UPDATETIME", "COMMENT")
+		printDash(n + 2)
 		for _, v := range repos {
-			fmt.Printf("%-16s\t%-16s\t%-16s\n", v.RepositoryName, v.Optime, v.Comment)
+			fmt.Printf("%-16s\n", v.RepositoryName) //, v.Optime, v.Comment)
 		}
 	} else if icmd == ReposReponame {
 		onerepo := ds.Repository{}
@@ -147,10 +147,10 @@ func repoResp(icmd int, respbody []byte, repo, item, tag string) {
 		if err != nil {
 			panic(err)
 		}
-		n, _ := fmt.Printf("%s\t%s\n", "REPOSITORY/ITEM:TAG", "UPDATETIME")
+		n, _ := fmt.Printf("%s\t%s\t%s\n", "REPOSITORY/ITEM:TAG", "UPDATETIME", "COMMENT")
 		printDash(n + 12)
 		for _, v := range repoitemtags.Taglist {
-			fmt.Printf("%s/%s:%s\t%s\n", repo, item, v.Tag, v.Optime)
+			fmt.Printf("%s/%s:%s\t%s\t%s\n", repo, item, v.Tag, v.Optime, v.Comment)
 		}
 	} else if icmd == ReposReponameDataItemTag {
 		onetag := ds.Tag{}
