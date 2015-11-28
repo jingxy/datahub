@@ -27,6 +27,7 @@ func Subs(login bool, args []string) (err error) {
 		uri = "/repositories"
 		uri = uri + "/" + args[0]
 		itemDetail = true
+		return Repo(login, args) //deal  repo/item:tag by repo cmd
 	}
 
 	resp, err := commToDaemon("GET", uri, nil)
