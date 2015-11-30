@@ -313,6 +313,7 @@ func RunDaemon() {
 	if len(DaemonID) > 0 {
 		go startP2PServer()
 		go HeartBeat()
+		go datapoolMonitor()
 	} else {
 		log.Error("no daemonid specificed.")
 		fmt.Println("You don't have a daemonid specificed.")

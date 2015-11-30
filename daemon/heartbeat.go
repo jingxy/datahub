@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
+	"github.com/asiainfoLDP/datahub/utils/logq"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -15,11 +16,12 @@ import (
 type Beatbody struct {
 	Daemonid   string   `json:"daemonid"`
 	Entrypoint []string `json:"entrypoint"`
+	Log        []string `json:"log,omitempty"`
 }
 
 var (
 	EntryPoint       string
-	EntryPointStatus string
+	EntryPointStatus = "not available"
 	DaemonID         string
 	heartbeatTimeout = 5 * time.Second
 )
@@ -27,9 +29,14 @@ var (
 func HeartBeat() {
 
 	for {
-		heartbeatbody := Beatbody{Daemonid: DaemonID}
+		logQueue := logq.LogGetqueue()
+		fmt.Println(logQueue)
+		heartbeatbody := Beatbody{Daemonid: DaemonID, Log: logQueue}
 		heartbeatbody.Entrypoint = append(heartbeatbody.Entrypoint, EntryPoint)
 		jsondata, err := json.Marshal(heartbeatbody)
+		if err != nil {
+			log.Error(err)
+		}
 		url := DefaultServer + "/heartbeat"
 		log.Trace("connecting to", url, string(jsondata))
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsondata))
