@@ -17,7 +17,8 @@ import (
 	"strings"
 )
 
-var SampleFiles = []string{"sample.md", "Sample.md", "SAMPLE.MD"}
+var SampleFiles = []string{"sample.md", "Sample.md", "SAMPLE.MD", "sample.MD", "SAMPLE.md"}
+var MetaFiles = []string{"meta.md", "Meta.md", "META.MD", "meta.MD", "META.md"}
 
 type Sys struct {
 	Supplystyle string `json:"supply_style"`
@@ -40,16 +41,16 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	pub := ds.PubPara{}
 	if err := json.Unmarshal(reqBody, &pub); err != nil {
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, "pub dataitem error while unmarshal reqBody")
+		HttpNoData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, "pub dataitem error while unmarshal reqBody")
 		return
 	}
 	if CheckDataPoolExist(pub.Datapool) == false {
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal,
+		HttpNoData(w, http.StatusBadRequest, cmd.ErrorUnmarshal,
 			fmt.Sprintf("datapool %s not exist, please check.", pub.Datapool))
 		return
 	}
 
-	meta, sample := GetMetaAndSampleData(pub.Datapool, pub.ItemDesc)
+	meta, sample := GetMetaAndSample(pub.Datapool, pub.ItemDesc)
 
 	icpub := ic{AccessType: pub.Accesstype,
 		Comment: pub.Comment,
@@ -62,7 +63,7 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	if err != nil {
 		s := "pub dataitem error while marshal icpub struct"
 		log.Println(s)
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorMarshal, s)
+		HttpNoData(w, http.StatusBadRequest, cmd.ErrorMarshal, s)
 		return
 	}
 	log.Println(string(body))
@@ -76,7 +77,7 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		s := "pub dataitem service unavailable"
-		WriteHttpResultWithoutData(w, http.StatusServiceUnavailable, cmd.ErrorServiceUnavailable, s)
+		HttpNoData(w, http.StatusServiceUnavailable, cmd.ErrorServiceUnavailable, s)
 		return
 	}
 	defer resp.Body.Close()
@@ -89,16 +90,16 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		err := MkdirForDataItem(repo, item, pub.Datapool, pub.ItemDesc)
 		if err != nil {
 			RollBackItem(repo, item)
-			WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
+			HttpNoData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
 				fmt.Sprintf("Mkdir error! %s", err.Error()))
 		} else {
 			err = InsertItemToDb(repo, item, pub.Datapool, pub.ItemDesc)
 			if err != nil {
 				RollBackItem(repo, item)
-				WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
+				HttpNoData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
 					"Insert dataitem to datapool error, please check it immediately!")
 			} else {
-				WriteHttpResultWithoutData(w, http.StatusOK, cmd.ResultOK, "OK")
+				HttpNoData(w, http.StatusOK, cmd.ResultOK, "OK")
 			}
 		}
 	} else {
@@ -108,11 +109,11 @@ func pubItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		if err != nil {
 			s := "pub dataitem error while unmarshal server response"
 			log.Println(s)
-			WriteHttpResultWithoutData(w, resp.StatusCode, cmd.ErrorUnmarshal, s)
+			HttpNoData(w, resp.StatusCode, cmd.ErrorUnmarshal, s)
 			return
 		}
 		log.Println(resp.StatusCode, result.Msg)
-		WriteHttpResultWithoutData(w, resp.StatusCode, result.Code, result.Msg)
+		HttpNoData(w, resp.StatusCode, result.Code, result.Msg)
 	}
 
 	return
@@ -125,11 +126,11 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	pub := ds.PubPara{}
 	if err := json.Unmarshal(reqBody, &pub); err != nil {
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, "pub tag error while unmarshal reqBody")
+		HttpNoData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, "pub tag error while unmarshal reqBody")
 		return
 	}
 	if len(pub.Detail) == 0 {
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, "tag detail is not found")
+		HttpNoData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, "tag detail is not found")
 		return
 	}
 
@@ -139,9 +140,9 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 	//var NeedCopy bool
 	//get DpFullPath and check whether repo/dataitem has been published
-	DpItemFullPath, err := CheckTagExistAndGetDpFullPath(repo, item, tag)
+	DpItemFullPath, err := CheckTagAndGetDpPath(repo, item, tag)
 	if err != nil || len(DpItemFullPath) == 0 {
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, err.Error()+"  Datapool+Itemdesc Path: "+DpItemFullPath)
+		HttpNoData(w, http.StatusBadRequest, cmd.ErrorUnmarshal, err.Error()+"  Datapool+Itemdesc Path: "+DpItemFullPath)
 		return
 	}
 	splits := strings.Split(pub.Detail, "/")
@@ -152,8 +153,15 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	if isFileExists(DestFullPathFileName) == false {
 		errlog := fmt.Sprintf("%s is not found, please ensure %s is in dir:%s", DestFullPathFileName, FileName, DpItemFullPath)
 		log.Error(errlog)
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorFileNotExist, errlog)
+		HttpNoData(w, http.StatusBadRequest, cmd.ErrorFileNotExist, errlog)
 		return
+	}
+
+	if size, err := GetFileSize(DestFullPathFileName); err != nil {
+		log.Error("Get %s size error, %v", DestFullPathFileName, err)
+	} else {
+		pub.Comment += SizeToStr(size)
+		//fmt.Sprintf(" Size:%v ", size)
 	}
 
 	body, err := json.Marshal(&struct {
@@ -163,7 +171,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	if err != nil {
 		s := "pub tag error while marshal struct"
 		log.Println(s)
-		WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorMarshal, s)
+		HttpNoData(w, http.StatusBadRequest, cmd.ErrorMarshal, s)
 		return
 	}
 
@@ -176,7 +184,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		s := "pub tag service unavailable"
-		WriteHttpResultWithoutData(w, http.StatusServiceUnavailable, cmd.ErrorServiceUnavailable, s)
+		HttpNoData(w, http.StatusServiceUnavailable, cmd.ErrorServiceUnavailable, s)
 		return
 	}
 	defer resp.Body.Close()
@@ -194,7 +202,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 			count, err := CopyFile(pub.Detail, DestFullPathFileName)
 			if err != nil {
 				RollBackTag(repo, item, tag)
-				WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
+				HttpNoData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
 					fmt.Sprintf(" Copy file to datapool error, permission denied or path '%s' not exist! ", DestFullPath))
 				return
 			}
@@ -203,10 +211,10 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		err = InsertPubTagToDb(repo, item, tag, FileName)
 		if err != nil {
 			RollBackTag(repo, item, tag)
-			WriteHttpResultWithoutData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
+			HttpNoData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
 				"Insert dataitem to datapool error, please check it immediately!")
 		} else {
-			WriteHttpResultWithoutData(w, http.StatusOK, cmd.ResultOK, "OK")
+			HttpNoData(w, http.StatusOK, cmd.ResultOK, "OK")
 		}
 	} else {
 
@@ -215,27 +223,45 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		if err != nil {
 			s := "pub dataitem error while unmarshal server response"
 			log.Println(s)
-			WriteHttpResultWithoutData(w, resp.StatusCode, cmd.ErrorUnmarshal, s)
+			HttpNoData(w, resp.StatusCode, cmd.ErrorUnmarshal, s)
 			return
 		}
 		log.Println(resp.StatusCode, result.Msg)
-		WriteHttpResultWithoutData(w, resp.StatusCode, result.Code, result.Msg)
+		HttpNoData(w, resp.StatusCode, result.Code, result.Msg)
 	}
 
 	return
 
 }
 
-func GetMetaAndSampleData(datapool, itemdesc string) (meta, sample string) {
+func GetMetaAndSample(datapool, itemdesc string) (meta, sample string) {
 	dpconn := GetDataPoolDpconn(datapool)
 	if len(dpconn) == 0 || len(itemdesc) == 0 {
 		log.Errorf("dpconn:%s,  itemdesc:%s \n", dpconn, itemdesc)
 		return
 	}
-	meta = "  "
+	meta = GetMetaData(dpconn, itemdesc)
 	sample = GetSampleData(dpconn, itemdesc)
 
 	return
+}
+
+func GetMetaData(dpconn, itemdesc string) (meta string) {
+	dirname := dpconn + "/" + itemdesc
+	var filename string
+	for _, v := range MetaFiles {
+		filename = dirname + "/" + v
+		if isFileExists(filename) == true {
+			if bytes, err := ioutil.ReadFile(filename); err == nil {
+				meta = string(bytes)
+				return meta
+			} else {
+				log.Error(err)
+				return " "
+			}
+		}
+	}
+	return "  "
 }
 
 func GetSampleData(dpconn, itemdesc string) (sample string) {
@@ -277,7 +303,7 @@ func GetSampleData(dpconn, itemdesc string) (sample string) {
 					break
 				}
 				i++
-				sample += scanner.Text() + "\n"
+				sample += scanner.Text() + "\n\n" //md \\n is a new line
 				//log.Println(scanner.Text())
 			}
 			break
@@ -288,7 +314,7 @@ func GetSampleData(dpconn, itemdesc string) (sample string) {
 	return sample
 }
 
-func WriteHttpResultWithoutData(w http.ResponseWriter, httpcode, errorcode int, msg string) {
+func HttpNoData(w http.ResponseWriter, httpcode, errorcode int, msg string) {
 	w.WriteHeader(httpcode)
 	respbody, _ := json.Marshal(&struct {
 		Code int    `json:"code"`
@@ -320,7 +346,7 @@ func RollBackItem(repo, item string) {
 	}
 }
 
-func CheckTagExistAndGetDpFullPath(repo, item, tag string) (dppath string, err error) {
+func CheckTagAndGetDpPath(repo, item, tag string) (dppath string, err error) {
 	exist, err := CheckTagExist(repo, item, tag)
 	if err != nil {
 		return "", err
@@ -392,4 +418,30 @@ func DeleteItemOrTag(repo, item, tag string) (err error) {
 		return errors.New(fmt.Sprintf("%d", resp.StatusCode))
 	}
 	return err
+}
+
+func GetFileSize(file string) (size int64, e error) {
+	f, e := os.Stat(file)
+	if e != nil {
+		return 0, e
+	}
+	return f.Size(), nil
+}
+
+func SizeToStr(size int64) (s string) {
+	if size < 0 {
+		return ""
+	}
+	if size < 1024 {
+		s = fmt.Sprintf(" Size:%v Bytes", size)
+	} else if size >= 1024 && size < 1024*1024 {
+		s = fmt.Sprintf(" Size:%.2f KB", float64(size)/1024)
+	} else if size >= 1024*1024 && size < 1024*1024*1024 {
+		s = fmt.Sprintf(" Size:%.2f MB", float64(size)/(1024*1024))
+	} else if size >= 1024*1024*1024 && size < 1024*1024*1024*1024 {
+		s = fmt.Sprintf(" Size:%.2f GB", float64(size)/(1024*1024*1024))
+	} else if size >= 1024*1024*1024*1024 && size < 1024*1024*1024*1024*1024 {
+		s = fmt.Sprintf(" Size:%.2f TB", float64(size)/(1024*1024*1024*1024))
+	}
+	return s
 }
