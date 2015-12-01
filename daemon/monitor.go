@@ -3,7 +3,7 @@ package daemon
 import (
 	"fmt"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
-	"github.com/asiainfoLDP/datahub/utils/fsnotify"
+	"github.com/asiainfoLDP/datahub/utils/go-fsnotify/fsnotify"
 	"github.com/asiainfoLDP/datahub/utils/logq"
 )
 
