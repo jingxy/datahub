@@ -7,11 +7,11 @@ import (
 	"github.com/asiainfoLDP/datahub/utils/logq"
 )
 
-var monitList = []string{
-	"/var/lib/datahub",
-	"/tmp/foo",
-	"/tmp/bar",
-}
+var monitList map[string]string //{
+//{"tag1", "/var/lib/datahub/tag1.txt"},
+//{"tag2", "/tmp/foo/tag2"},
+//{"tag3", "/tmp/bar/tag3"},
+//}
 
 func datapoolMonitor() {
 	watcher, err := fsnotify.NewWatcher()
@@ -62,4 +62,9 @@ func datapoolMonitor() {
 
 func initMonitList() {
 	fmt.Println("TODO INIT MONIT LIST.")
+	monitList = make(map[string]string)
+	if e := GetTagDetails(&monitList); e != nil {
+		log.Errorf("GetTagDetails error. %v", e)
+	}
+	log.Println(monitList)
 }
