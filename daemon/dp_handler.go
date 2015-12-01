@@ -15,7 +15,6 @@ import (
 
 func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	r.ParseForm()
-
 	rw.WriteHeader(http.StatusOK)
 
 	if r.Method == "POST" {
@@ -55,7 +54,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				return
 			}
 			if err := os.MkdirAll(sdpDirName, 0777); err != nil {
-				log.Println(sdpDirName)
+				log.Error(err, sdpDirName)
 				msg.Msg = err.Error()
 			} else {
 				msg.Msg = fmt.Sprintf("dp create success. dp:%s total path:%s", reqJson.Name, sdpDirName)
