@@ -29,7 +29,7 @@ func datapoolMonitor() {
 		for {
 			select {
 			case event := <-watcher.Events:
-				log.Println("event:", event)
+				log.Debug("event:", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					l := log.Warn("modified file:", event.Name)
 					logq.LogPutqueue(l)
