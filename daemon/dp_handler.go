@@ -22,12 +22,16 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 		reqJson := cmd.FormatDpCreate{}
 		err := json.Unmarshal(result, &reqJson)
 		if err != nil {
-			fmt.Printf("%T\n%s\n%#v\n", err, err, err)
-			fmt.Fprintln(rw, "Invalid argument.")
+			log.Error("invalid argument. json.Unmarshal error", err)
+			rw.Write([]byte(`{"Msg":"invalid argument."}`))
+			return
 		}
 		if len(reqJson.Name) == 0 {
-			fmt.Fprintln(rw, "Invalid argument.")
+			log.Println("Invalid argument")
+			rw.Write([]byte(`{"Msg":"Invalid argument"}`))
+			return
 		} else {
+			log.Println("dpname", reqJson.Name)
 			msg := &ds.MsgResp{}
 			var sdpDirName string
 			if len(reqJson.Conn) == 0 {
@@ -50,7 +54,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 			if dpexist {
 				msg.Msg = fmt.Sprintf("Datapool %s is already exist, please use another name!", reqJson.Name)
 				resp, _ := json.Marshal(msg)
-				fmt.Fprintln(rw, string(resp))
+				rw.Write(resp)
 				return
 			}
 			if err := os.MkdirAll(sdpDirName, 0777); err != nil {
@@ -67,8 +71,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				}
 			}
 			resp, _ := json.Marshal(msg)
-			respStr := string(resp)
-			fmt.Fprintln(rw, respStr)
+			rw.Write(resp)
 		}
 
 	}
