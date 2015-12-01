@@ -46,8 +46,8 @@ func DpCreate(needLogin bool, args []string) (err error) {
 
 	}
 
-	dptype := strings.ToLower(d.Type)
-	if dptype != "file" && dptype != "db" && dptype != "hadoop" && dptype != "api" && dptype != "storm" {
+	d.Type = strings.ToLower(d.Type)
+	if d.Type != "file" && d.Type != "db" && d.Type != "hadoop" && d.Type != "api" && d.Type != "storm" {
 		fmt.Println("Datapool type need to be :file,db,hadoop,api,storm")
 		return
 	}

@@ -300,6 +300,48 @@ func UpdateSql04To05() (err error) {
 	return
 }
 
+func GetTagDetails(monitList *map[string]string) (e error) {
+	sqlDp := `SELECT DPID, DPCONN FROM DH_DP WHERE DPTYPE='file' AND STATUS = 'A';`
+	rDps, e := g_ds.QueryRows(sqlDp)
+	if e != nil {
+		return e
+	}
+	var conn string
+	var dpid int
+	for rDps.Next() {
+		rDps.Scan(&dpid, &conn)
+		sqlItem := fmt.Sprintf(`SELECT RPDMID, REPOSITORY, DATAITEM, ITEMDESC 
+			FROM DH_DP_RPDM_MAP 
+			WHERE STATUS='A' AND PUBLISH='Y' AND DPID = %v;`, dpid)
+		rItems, e := g_ds.QueryRows(sqlItem)
+		if e != nil {
+			return e
+		}
+		var id int
+		var repo, item, desc string
+		for rItems.Next() {
+			rItems.Scan(&id, &repo, &item, &desc)
+			k := repo + "/" + item + ":"
+			v := conn + "/" + desc + "/"
+			sqlTag := fmt.Sprintf(`SELECT TAGNAME, DETAIL FROM DH_RPDM_TAG_MAP 
+				WHERE STATUS='A' AND RPDMID=%v`, id)
+			rTags, e := g_ds.QueryRows(sqlTag)
+			if e != nil {
+				return e
+			}
+			var tagname, detail string
+			for rTags.Next() {
+				rTags.Scan(&tagname, &detail)
+				k += tagname
+				v += detail
+				(*monitList)[k] = v
+			}
+		}
+
+	}
+	return e
+}
+
 func buildResp(code int, msg string, data interface{}) (body []byte, err error) {
 	r := ds.Response{}
 
