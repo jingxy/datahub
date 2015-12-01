@@ -277,7 +277,7 @@ func RunDaemon() {
 	router.DELETE("/ep", epDeleteHandler)
 
 	router.GET("/repositories/:repo/:item/:tag", repoTagHandler)
-	router.GET("/repositories/:repo/:item", repoDetailHandler)
+	router.GET("/repositories/:repo/:item", repoItemHandler)
 	router.GET("/repositories/:repo", repoRepoNameHandler)
 	router.GET("/repositories", repoHandler)
 	router.GET("/subscriptions", subsHandler)
@@ -448,22 +448,21 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	log.Println("filename:", filepathname)
 	if exists := isFileExists(filepathname); !exists {
 		log.Error("1 file not found", filepathname)
-		filepathname = "/" + sdpconn + "/" + sdpname + "/" + sRepoName + "/" + sDataItem + "/" + stagdetail
-		if exists := isFileExists(filepathname); !exists {
-			//filepathname = "/" + sdpconn + "/" + stagdetail
-			//if exists := isFileExists(filepathname); !exists {
-			//	filepathname = "/var/lib/datahub/" + sTag
-			//	if exists := isFileExists(filepathname); !exists {
-			log.Error("2 filename not found:", filepathname)
-			//http.NotFound(rw, r)
-			msg.Msg = fmt.Sprintf("tag:%s not found", sTag)
-			resp, _ := json.Marshal(msg)
-			respStr := string(resp)
-			rw.WriteHeader(http.StatusNotFound)
-			fmt.Fprintln(rw, respStr)
-			return
-
-		}
+		//filepathname = "/" + sdpconn + "/" + sdpname + "/" + sRepoName + "/" + sDataItem + "/" + stagdetail
+		//if exists := isFileExists(filepathname); !exists {
+		//filepathname = "/" + sdpconn + "/" + stagdetail
+		//if exists := isFileExists(filepathname); !exists {
+		//	filepathname = "/var/lib/datahub/" + sTag
+		//	if exists := isFileExists(filepathname); !exists {
+		//log.Error("2 filename not found:", filepathname)
+		//http.NotFound(rw, r)
+		msg.Msg = fmt.Sprintf("tag:%s not found", sTag)
+		resp, _ := json.Marshal(msg)
+		respStr := string(resp)
+		rw.WriteHeader(http.StatusNotFound)
+		fmt.Fprintln(rw, respStr)
+		return
+		//}
 	}
 	log.Println("Tag file full path name :", filepathname)
 	rw.Header().Set("Source-FileName", stagdetail)
