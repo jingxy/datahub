@@ -313,6 +313,7 @@ func RunDaemon() {
 	if len(DaemonID) > 0 {
 		go startP2PServer()
 		go HeartBeat()
+		go datapoolMonitor()
 	} else {
 		log.Error("no daemonid specificed.")
 		fmt.Println("You don't have a daemonid specificed.")
@@ -369,7 +370,14 @@ func startP2PServer() {
 }
 
 func p2pHealthyCheckHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	healthbody := Beatbody{Daemonid: DaemonID}
+	jsondata, err := json.Marshal(healthbody)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	rw.WriteHeader(http.StatusOK)
+	rw.Write(jsondata)
 }
 
 /*pull parses filename and target IP from HTTP GET method, and start downloading routine. */

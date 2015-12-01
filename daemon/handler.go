@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
+	"github.com/asiainfoLDP/datahub/utils/logq"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -80,7 +81,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func commToServer(method, path string, buffer []byte, w http.ResponseWriter) (resp *http.Response, err error) {
 	//Trace()
-	log.Println("daemon: connecting to", DefaultServer+path)
+	s := log.Info("daemon: connecting to", DefaultServer+path)
+	logq.LogPutqueue(s)
 	req, err := http.NewRequest(strings.ToUpper(method), DefaultServer+path, bytes.NewBuffer(buffer))
 	if len(loginAuthStr) > 0 {
 		req.Header.Set("Authorization", loginAuthStr)
