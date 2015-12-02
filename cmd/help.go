@@ -20,10 +20,13 @@ var cmdhelps = []CmdHelp{
 }
 
 func Help(login bool, args []string) (err error) {
-	fmt.Println("Usage:\tdatahub COMMAND [arg...]\n\tdatahub COMMAND [ --help ]\n\tdatahub help [COMMAND]\n\nCommands:")
+	fmt.Println("Usage:\tdatahub COMMAND [arg...]")
+	fmt.Println("\tdatahub COMMAND [ --help ]")
+	fmt.Println("\tdatahub help [COMMAND]\n")
+	fmt.Println("Commands:")
 	if len(args) == 0 {
 		for _, v := range Cmd {
-			fmt.Printf("\t%-16s  %s\n", v.Name, v.Desc)
+			fmt.Printf("    %-10s%s\n", v.Name, v.Desc)
 		}
 		return nil
 	} else {

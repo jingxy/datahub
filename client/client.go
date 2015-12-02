@@ -59,10 +59,12 @@ func RunClient() {
 }
 
 func ShowUsage() {
-	fmt.Println("Usage: datahub COMMAND [arg...]\n\tdatahub COMMAND [ --help ]\n\tdatahub help [COMMAND]\n\nCommands:")
-
+	fmt.Println("Usage:\tdatahub COMMAND [arg...]")
+	fmt.Println("\tdatahub COMMAND [ --help ]")
+	fmt.Println("\tdatahub help [COMMAND]\n")
+	fmt.Println("Commands:")
 	for _, v := range cmd.Cmd {
-		fmt.Printf("  %-16s  %s\n", v.Name, v.Desc)
-
+		fmt.Printf("    %-10s%s\n", v.Name, v.Desc)
 	}
+	fmt.Printf("\nRun '%s COMMAND --help' for details on a command.\n", os.Args[0])
 }
