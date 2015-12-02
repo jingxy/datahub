@@ -60,7 +60,7 @@ func RunClient() {
 
 func ShowUsage() {
 	for _, v := range cmd.Cmd {
-		fmt.Printf("%-16s  %s\n", v.Name, v.Desc)
+		fmt.Printf("%s\t%s\n", v.Name, v.Desc)
 
 	}
 }
