@@ -15,7 +15,7 @@ import (
 	"syscall"
 )
 
-const GstrDpPath string = "/var/lib/datahub/"
+const GstrDpPath string = "/var/lib/datahub"
 
 type UserInfo struct {
 	userName string

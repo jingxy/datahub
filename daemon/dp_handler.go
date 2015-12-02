@@ -22,12 +22,16 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 		reqJson := cmd.FormatDpCreate{}
 		err := json.Unmarshal(result, &reqJson)
 		if err != nil {
-			fmt.Printf("%T\n%s\n%#v\n", err, err, err)
-			fmt.Fprintln(rw, "Invalid argument.")
+			log.Error("invalid argument. json.Unmarshal error", err)
+			rw.Write([]byte(`{"Msg":"invalid argument."}`))
+			return
 		}
 		if len(reqJson.Name) == 0 {
-			fmt.Fprintln(rw, "Invalid argument.")
+			log.Println("Invalid argument")
+			rw.Write([]byte(`{"Msg":"Invalid argument"}`))
+			return
 		} else {
+			log.Println("dpname", reqJson.Name)
 			msg := &ds.MsgResp{}
 			var sdpDirName string
 			if len(reqJson.Conn) == 0 {
@@ -35,7 +39,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				sdpDirName = g_strDpPath
 
 			} else if reqJson.Conn[0] != '/' {
-				sdpDirName = g_strDpPath + reqJson.Conn
+				sdpDirName = g_strDpPath + "/" + reqJson.Conn
 				reqJson.Conn = sdpDirName
 				/*if reqJson.Conn[len(reqJson.Conn)-1] == '/' {
 					sdpDirName = sdpDirName + reqJson.Name
@@ -48,16 +52,16 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 			dpexist := CheckDataPoolExist(reqJson.Name)
 			if dpexist {
-				msg.Msg = fmt.Sprintf("Datapool %s is already exist, please use another name!", reqJson.Name)
+				msg.Msg = fmt.Sprintf("The datapool %s is already exist, please use another name!", reqJson.Name)
 				resp, _ := json.Marshal(msg)
-				fmt.Fprintln(rw, string(resp))
+				rw.Write(resp)
 				return
 			}
 			if err := os.MkdirAll(sdpDirName, 0777); err != nil {
 				log.Error(err, sdpDirName)
 				msg.Msg = err.Error()
 			} else {
-				msg.Msg = fmt.Sprintf("dp create success. dp:%s total path:%s", reqJson.Name, sdpDirName)
+				msg.Msg = fmt.Sprintf("dp create success. name:%s type:%s path:%s", reqJson.Name, reqJson.Type, sdpDirName)
 				reqJson.Conn = strings.TrimRight(reqJson.Conn, "/")
 				sql_dp_insert := fmt.Sprintf(`insert into DH_DP (DPID, DPNAME, DPTYPE, DPCONN, STATUS)
 					values (null, '%s', '%s', '%s', 'A')`, reqJson.Name, reqJson.Type, reqJson.Conn)
@@ -67,8 +71,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				}
 			}
 			resp, _ := json.Marshal(msg)
-			respStr := string(resp)
-			fmt.Fprintln(rw, respStr)
+			rw.Write(resp)
 		}
 
 	}

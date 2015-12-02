@@ -62,7 +62,7 @@ func Test_dpPostOneHandler(t *testing.T) {
 				Conn: "/var/lib/datahub/datahub-Unit-Test",
 			},
 			rw:  httptest.NewRecorder(),
-			out: "dp create success. dp:datahub_unit_test total path:/var/lib/datahub/datahub-Unit-Test",
+			out: "dp create success. name:datahub_unit_test type:file path:/var/lib/datahub/datahub-Unit-Test",
 		},
 		Context{
 			desc: "2.create dup datapool err--------",
@@ -77,7 +77,7 @@ func Test_dpPostOneHandler(t *testing.T) {
 				Conn: "/var/lib/datahub/datahub-Unit-Test",
 			},
 			rw:  httptest.NewRecorder(),
-			out: "Datapool datahub_unit_test is already exist, please use another name!",
+			out: "The datapool datahub_unit_test is already exist, please use another name!",
 		},
 	}
 
