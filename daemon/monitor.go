@@ -1,20 +1,20 @@
 package daemon
 
 import (
-	"fmt"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/asiainfoLDP/datahub/utils/go-fsnotify/fsnotify"
 	"github.com/asiainfoLDP/datahub/utils/logq"
 )
 
-var monitList map[string]string //{
-//{"tag1", "/var/lib/datahub/tag1.txt"},
-//{"tag2", "/tmp/foo/tag2"},
-//{"tag3", "/tmp/bar/tag3"},
-//}
+//map[file]tag
+var (
+	monitList = make(map[string]string)
+	watcher   *fsnotify.Watcher
+)
 
 func datapoolMonitor() {
-	watcher, err := fsnotify.NewWatcher()
+	var err error
+	watcher, err = fsnotify.NewWatcher()
 	if err != nil {
 		l := log.Error(err)
 		logq.LogPutqueue(l)
@@ -31,15 +31,15 @@ func datapoolMonitor() {
 			case event := <-watcher.Events:
 				log.Debug("event:", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					l := log.Warn("modified file:", event.Name)
+					l := log.Warn("modified file:", event.Name, monitList[event.Name])
 					logq.LogPutqueue(l)
 				}
 				if event.Op&fsnotify.Remove == fsnotify.Remove {
-					l := log.Warn("deleted file:", event.Name)
+					l := log.Warn("deleted file:", event.Name, monitList[event.Name])
 					logq.LogPutqueue(l)
 				}
 				if event.Op&fsnotify.Rename == fsnotify.Rename {
-					l := log.Warn("renamed file:", event.Name)
+					l := log.Warn("renamed file:", event.Name, monitList[event.Name])
 					logq.LogPutqueue(l)
 				}
 			case err := <-watcher.Errors:
@@ -49,10 +49,11 @@ func datapoolMonitor() {
 		}
 	}()
 
-	for _, filecheck := range monitList {
+	for filecheck, tag := range monitList {
+		log.Debug("monitoring", filecheck, tag)
 		err = watcher.Add(filecheck)
 		if err != nil {
-			l := log.Error(err)
+			l := log.Errorf("checking %v %v error: %v", filecheck, tag, err)
 			logq.LogPutqueue(l)
 		}
 	}
@@ -60,11 +61,20 @@ func datapoolMonitor() {
 	<-done
 }
 
+func AddtoMonitor(filecheck, tag string) {
+	err := watcher.Add(filecheck)
+	log.Debug("monitoring", filecheck, tag)
+	if err != nil {
+		l := log.Errorf("checking %v error: %v", filecheck, err)
+		logq.LogPutqueue(l)
+	}
+	monitList[filecheck] = tag
+}
+
 func initMonitList() {
-	fmt.Println("TODO INIT MONIT LIST.")
-	monitList = make(map[string]string)
+	//monitList = make(map[string]string)
 	if e := GetTagDetails(&monitList); e != nil {
 		log.Errorf("GetTagDetails error. %v", e)
 	}
-	log.Println(monitList)
+	//log.Debug(monitList)
 }

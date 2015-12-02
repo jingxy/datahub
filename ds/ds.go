@@ -32,7 +32,7 @@ const (
 )
 
 const (
-	DATAHUB_VERSION = "v0.5.1"
+	DATAHUB_VERSION = "v0.5.2"
 )
 
 type MsgResp struct {

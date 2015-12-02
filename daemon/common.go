@@ -332,9 +332,9 @@ func GetTagDetails(monitList *map[string]string) (e error) {
 			var tagname, detail string
 			for rTags.Next() {
 				rTags.Scan(&tagname, &detail)
-				k += tagname
-				v += detail
-				(*monitList)[k] = v
+				tag := k + tagname
+				file := v + detail
+				(*monitList)[file] = tag
 			}
 		}
 
