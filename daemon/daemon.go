@@ -9,7 +9,7 @@ import (
 	"github.com/asiainfoLDP/datahub/daemon/daemonigo"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
-	"github.com/asiainfoLDP/datahub/utils/julienschmidt/httprouter"
+	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
 	"net"
 	"net/http"

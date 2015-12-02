@@ -11,7 +11,8 @@ WORKDIR $SRCPATH
 ADD . $SRCPATH
 
 RUN mkdir /var/lib/datahub
-RUN go build
+RUN curl -s https://raw.githubusercontent.com/pote/gpm/v1.3.2/bin/gpm | bash && \
+    go build
 
 EXPOSE 35800
 
