@@ -40,7 +40,7 @@ func DpCreate(needLogin bool, args []string) (err error) {
 		}
 		d.Name = args[0]
 		sp := strings.Split(args[1], "://")
-		fmt.Println("sp len:", len(sp), sp)
+		//fmt.Println("sp len:", len(sp), sp)
 		if len(sp) > 1 && len(sp[1]) > 0 {
 			d.Type = strings.ToLower(sp[0])
 			if sp[1][0] != '/' && d.Type == "file" {
