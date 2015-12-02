@@ -59,8 +59,10 @@ func RunClient() {
 }
 
 func ShowUsage() {
+	fmt.Printf("usage: %s COMMAND [arg...]\n\n", os.Args[0])
+	fmt.Println("commands:")
 	for _, v := range cmd.Cmd {
-		fmt.Printf("%s\t%s\n", v.Name, v.Desc)
-
+		fmt.Printf("    %-10s%s\n", v.Name, v.Desc)
 	}
+	fmt.Printf("\nrun '%s COMMAND --help' for details on a command.\n", os.Args[0])
 }
