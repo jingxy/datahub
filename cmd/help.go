@@ -21,18 +21,16 @@ var cmdhelps = []CmdHelp{
 
 func Help(login bool, args []string) (err error) {
 
-	if len(args) == 0 {
-		for _, v := range Cmd {
-			fmt.Printf("%-16s  %s\n", v.Name, v.Desc)
-		}
-		return nil
-	} else {
+	if len(args) > 0 {
 		for _, v := range cmdhelps {
 			if args[0] == v.Name {
 				v.Handler()
-				break
+				return
 			}
 		}
+		fmt.Printf("datahub: '%s' not found, see 'datahub --help'.\n", args[0])
+	} else {
+		ShowUsage()
 	}
 	return
 }

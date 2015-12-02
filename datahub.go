@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/client"
+	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/daemon"
 	"github.com/asiainfoLDP/datahub/daemon/daemonigo"
 	"github.com/asiainfoLDP/datahub/ds"
@@ -23,7 +24,7 @@ func flagParse() {
 	flVersion := flag.Bool([]string{"V", "-version"}, false, "Show version")
 	flToken := flag.String([]string{"-token"}, "", "user token")
 
-	flag.Usage = client.ShowUsage
+	flag.Usage = cmd.ShowUsage
 	//flag.PrintDefaults()
 	flag.Parse()
 	//fmt.Printf("run daemon: %v, version: %v\n", *flDaemon, *flVersion)
