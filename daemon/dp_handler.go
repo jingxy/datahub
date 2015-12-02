@@ -39,7 +39,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				sdpDirName = g_strDpPath
 
 			} else if reqJson.Conn[0] != '/' {
-				sdpDirName = g_strDpPath + reqJson.Conn
+				sdpDirName = g_strDpPath + "/" + reqJson.Conn
 				reqJson.Conn = sdpDirName
 				/*if reqJson.Conn[len(reqJson.Conn)-1] == '/' {
 					sdpDirName = sdpDirName + reqJson.Name
@@ -52,7 +52,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 			dpexist := CheckDataPoolExist(reqJson.Name)
 			if dpexist {
-				msg.Msg = fmt.Sprintf("Datapool %s is already exist, please use another name!", reqJson.Name)
+				msg.Msg = fmt.Sprintf("The datapool %s is already exist, please use another name!", reqJson.Name)
 				resp, _ := json.Marshal(msg)
 				rw.Write(resp)
 				return
@@ -61,7 +61,7 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				log.Error(err, sdpDirName)
 				msg.Msg = err.Error()
 			} else {
-				msg.Msg = fmt.Sprintf("dp create success. dp:%s total path:%s", reqJson.Name, sdpDirName)
+				msg.Msg = fmt.Sprintf("dp create success. name:%s type:%s path:%s", reqJson.Name, reqJson.Type, sdpDirName)
 				reqJson.Conn = strings.TrimRight(reqJson.Conn, "/")
 				sql_dp_insert := fmt.Sprintf(`insert into DH_DP (DPID, DPNAME, DPTYPE, DPCONN, STATUS)
 					values (null, '%s', '%s', '%s', 'A')`, reqJson.Name, reqJson.Type, reqJson.Conn)
