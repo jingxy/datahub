@@ -61,6 +61,7 @@ func datapoolMonitor() {
 		err = watcher.Add(filecheck)
 		if err != nil {
 			l := log.Errorf("checking %v %v error: %v", filecheck, tag, err)
+
 			logq.LogPutqueue(l)
 		}
 	}
