@@ -37,6 +37,7 @@ func datapoolMonitor() {
 				if event.Op&fsnotify.Remove == fsnotify.Remove {
 					l := log.Warn("deleted file:", event.Name, monitList[event.Name])
 					logq.LogPutqueue(l)
+					watcher.Remove(event.Name)
 					err = watcher.Add(event.Name)
 					if err != nil {
 						l := log.Errorf("checking %v error: %v", event.Name, err)
@@ -76,6 +77,7 @@ func AddtoMonitor(filecheck, tag string) {
 		logq.LogPutqueue(l)
 	}
 	monitList[filecheck] = tag
+	//log.Info(monitList)
 }
 
 func initMonitList() {

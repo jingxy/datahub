@@ -20,7 +20,6 @@ var cmdhelps = []CmdHelp{
 }
 
 func Help(login bool, args []string) (err error) {
-
 	if len(args) > 0 {
 		for _, v := range cmdhelps {
 			if args[0] == v.Name {

@@ -139,7 +139,6 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	item := ps.ByName("item")
 	tag := ps.ByName("tag")
 
-	//var NeedCopy bool
 	//get DpFullPath and check whether repo/dataitem has been published
 	DpItemFullPath, err := CheckTagAndGetDpPath(repo, item, tag)
 	if err != nil || len(DpItemFullPath) == 0 {
@@ -148,7 +147,6 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 	splits := strings.Split(pub.Detail, "/")
 	FileName := splits[len(splits)-1]
-	//DestFullPath := DpFullPath
 	DestFullPathFileName := DpItemFullPath + "/" + FileName
 
 	if isFileExists(DestFullPathFileName) == false {
@@ -217,6 +215,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 			HttpNoData(w, http.StatusBadRequest, cmd.ErrorInsertItem,
 				"Insert dataitem to datapool error, please check it immediately!")
 		} else {
+			AddtoMonitor(DestFullPathFileName, repo+"/"+item+":"+tag)
 			HttpNoData(w, http.StatusOK, cmd.ResultOK, "OK")
 		}
 	} else {
