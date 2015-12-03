@@ -81,7 +81,8 @@ func AddtoMonitor(filecheck, tag string) {
 func initMonitList() {
 	//monitList = make(map[string]string)
 	if e := GetTagDetails(&monitList); e != nil {
-		log.Errorf("GetTagDetails error. %v", e)
+		l := log.Errorf("GetTagDetails error. %v", e)
+		logq.LogPutqueue(l)
 	}
 	//log.Debug(monitList)
 }

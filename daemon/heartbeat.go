@@ -40,7 +40,8 @@ func HeartBeat() {
 
 		jsondata, err := json.Marshal(heartbeatbody)
 		if err != nil {
-			log.Error(err)
+			l := log.Error(err)
+			logq.LogPutqueue(l)
 		}
 		url := DefaultServer + "/heartbeat"
 		log.Trace("connecting to", url, string(jsondata))
@@ -52,7 +53,8 @@ func HeartBeat() {
 		*/
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			log.Error(err.Error())
+			l := log.Error(err)
+			logq.LogPutqueue(l)
 			time.Sleep(10 * time.Second)
 			continue
 		}
