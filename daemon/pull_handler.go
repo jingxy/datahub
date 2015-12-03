@@ -7,7 +7,7 @@ import (
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
-	"github.com/asiainfoLDP/datahub/utils/julienschmidt/httprouter"
+	"github.com/julienschmidt/httprouter"
 	"io"
 	"io/ioutil"
 	"net/http"

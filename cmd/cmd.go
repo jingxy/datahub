@@ -208,3 +208,14 @@ func StopP2P() error {
 	return err
 	//commToDaemon("get", "/stop", nil)
 }
+
+func ShowUsage() {
+	fmt.Println("Usage:\tdatahub COMMAND [arg...]")
+	fmt.Println("\tdatahub COMMAND [ --help ]")
+	fmt.Println("\tdatahub help [COMMAND]\n")
+	fmt.Println("Commands:")
+	for _, v := range Cmd {
+		fmt.Printf("    %-10s%s\n", v.Name, v.Desc)
+	}
+	fmt.Printf("\nrun '%s COMMAND --help' for details on a command.\n", os.Args[0])
+}

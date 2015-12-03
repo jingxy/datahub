@@ -2,8 +2,8 @@ package daemon
 
 import (
 	log "github.com/asiainfoLDP/datahub/utils/clog"
-	"github.com/asiainfoLDP/datahub/utils/go-fsnotify/fsnotify"
 	"github.com/asiainfoLDP/datahub/utils/logq"
+	"github.com/go-fsnotify/fsnotify"
 )
 
 //map[file]tag

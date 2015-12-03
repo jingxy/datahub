@@ -15,6 +15,8 @@ type FormatDpCreate struct {
 	Conn string `json:"dpconn"`
 }
 
+var DataPoolTypes = []string{"file", "db", "hdfs", "jdbc", "s3", "api", "storm"}
+
 func DpCreate(needLogin bool, args []string) (err error) {
 	f := mflag.NewFlagSet("dp create", mflag.ContinueOnError)
 	d := FormatDpCreate{}
@@ -61,8 +63,14 @@ func DpCreate(needLogin bool, args []string) (err error) {
 		}
 	}
 
-	if d.Type != "file" && d.Type != "db" && d.Type != "hdfs" && d.Type != "api" && d.Type != "storm" {
-		fmt.Println("Datapool type need to be :file,db,hdfs,api,storm")
+	var allowtype bool = false
+	for _, v := range DataPoolTypes {
+		if d.Type == v {
+			allowtype = true
+		}
+	}
+	if !allowtype {
+		fmt.Println("Datapool type need to be:", DataPoolTypes)
 		return
 	}
 

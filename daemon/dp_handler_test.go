@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
-	"github.com/asiainfoLDP/datahub/utils/julienschmidt/httprouter"
+	"github.com/julienschmidt/httprouter"
 	//"log"
 	//"net"
 	//"errors"

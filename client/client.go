@@ -10,7 +10,7 @@ import (
 func RunClient() {
 
 	if len(os.Args) < 2 {
-		ShowUsage()
+		cmd.ShowUsage()
 		os.Exit(2)
 	}
 
@@ -50,21 +50,9 @@ func RunClient() {
 		commandFound = true
 	}
 	if !commandFound {
-		fmt.Println(command, "not found")
-		ShowUsage()
+		fmt.Printf("datahub: '%s' not found, see 'datahub --help'.\n", command)
 	}
 
 	return
 
-}
-
-func ShowUsage() {
-	fmt.Println("Usage:\tdatahub COMMAND [arg...]")
-	fmt.Println("\tdatahub COMMAND [ --help ]")
-	fmt.Println("\tdatahub help [COMMAND]\n")
-	fmt.Println("Commands:")
-	for _, v := range cmd.Cmd {
-		fmt.Printf("    %-10s%s\n", v.Name, v.Desc)
-	}
-	fmt.Printf("\nRun '%s COMMAND --help' for details on a command.\n", os.Args[0])
 }
