@@ -9,6 +9,7 @@ import (
 	"github.com/asiainfoLDP/datahub/daemon/daemonigo"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
+	"github.com/asiainfoLDP/datahub/utils/logq"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
 	"net"
@@ -57,7 +58,8 @@ func dbinit() {
 	var RetDhRpdmTagMap string
 	row, err := g_ds.QueryRow(ds.SQLIsExistRpdmTagMap)
 	if err != nil {
-		log.Error("Get Dh_Rpdm_Tag_Map error!")
+		l := log.Error("Get Dh_Rpdm_Tag_Map error!")
+		logq.LogPutqueue(l)
 		return
 	}
 	row.Scan(&RetDhRpdmTagMap)
@@ -256,7 +258,8 @@ func RunDaemon() {
 		log.Fatal(err)
 	} else {
 		if err = os.Chmod(cmd.UnixSock, os.ModePerm); err != nil {
-			log.Error(err)
+			l := log.Error(err)
+			logq.LogPutqueue(l)
 		}
 	}
 
@@ -315,7 +318,8 @@ func RunDaemon() {
 		go HeartBeat()
 		go datapoolMonitor()
 	} else {
-		log.Error("no daemonid specificed.")
+		l := log.Error("no daemonid specificed.")
+		logq.LogPutqueue(l)
 		fmt.Println("You don't have a daemonid specificed.")
 	}
 
@@ -382,7 +386,9 @@ func p2pHealthyCheckHandler(rw http.ResponseWriter, r *http.Request, ps httprout
 
 /*pull parses filename and target IP from HTTP GET method, and start downloading routine. */
 func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	log.Println("p2p pull...", r.URL.Path)
+	l := log.Info("P2P PULL FROM", r.RemoteAddr, r.Method, r.URL.RequestURI(), r.Proto)
+	logq.LogPutqueue(l)
+
 	r.ParseForm()
 	sRepoName := ps.ByName("repo")
 	sDataItem := ps.ByName("dataitem")
@@ -400,6 +406,8 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	if !tokenValid {
+		l := log.Warn("Access token not valid.", token, username)
+		logq.LogPutqueue(l)
 		http.Error(rw, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -431,7 +439,8 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	tagrow.Scan(&stagdetail)
 	log.Println("tagdetail", stagdetail)
 	if len(stagdetail) == 0 {
-		log.Warnf("%s(tag:%s) not found", stagdetail, sTag)
+		l := log.Warnf("%s(tag:%s) not found", stagdetail, sTag)
+		logq.LogPutqueue(l)
 		http.Error(rw, sTag+" not found", http.StatusNotFound)
 		return
 	}
@@ -447,15 +456,8 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	filepathname := sdpconn + "/" + itemdesc + "/" + stagdetail
 	log.Println("filename:", filepathname)
 	if exists := isFileExists(filepathname); !exists {
-		log.Error("1 file not found", filepathname)
-		//filepathname = "/" + sdpconn + "/" + sdpname + "/" + sRepoName + "/" + sDataItem + "/" + stagdetail
-		//if exists := isFileExists(filepathname); !exists {
-		//filepathname = "/" + sdpconn + "/" + stagdetail
-		//if exists := isFileExists(filepathname); !exists {
-		//	filepathname = "/var/lib/datahub/" + sTag
-		//	if exists := isFileExists(filepathname); !exists {
-		//log.Error("2 filename not found:", filepathname)
-		//http.NotFound(rw, r)
+		l := log.Error(filepathname, "not found")
+		logq.LogPutqueue(l)
 		msg.Msg = fmt.Sprintf("tag:%s not found", sTag)
 		resp, _ := json.Marshal(msg)
 		respStr := string(resp)
@@ -465,8 +467,9 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		//}
 	}
 	log.Println("Tag file full path name :", filepathname)
-	rw.Header().Set("Source-FileName", stagdetail)
-	log.Info("transfering", filepathname)
+	//rw.Header().Set("Source-FileName", stagdetail)
+	l = log.Info("transfering", filepathname)
+	logq.LogPutqueue(l)
 	http.ServeFile(rw, r, filepathname)
 
 	resp, _ := json.Marshal(msg)

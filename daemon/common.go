@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
+	"github.com/asiainfoLDP/datahub/utils/logq"
 )
 
 func CheckDataPoolExist(datapoolname string) (bexist bool) {
@@ -32,7 +33,8 @@ func GetDataPoolDpconn(datapoolname string) (dpconn string) {
 	//fmt.Println(sqlgetdpconn)
 	row, err := g_ds.QueryRow(sqlgetdpconn)
 	if err != nil {
-		log.Errorf(" QueryRow error:%s\n", err.Error())
+		l := log.Error("QueryRow error:", err)
+		logq.LogPutqueue(l)
 		return
 	} else {
 		row.Scan(&dpconn)
@@ -201,7 +203,8 @@ func GetItemDesc(Repository, Dataitem string) (ItemDesc string, err error) {
 	//log.Println(ItemDesc)
 	row, err := g_ds.QueryRow(getItemDesc)
 	if err != nil {
-		log.Errorf(" QueryRow error:%s\n", err.Error())
+		l := log.Error("QueryRow error:", err)
+		logq.LogPutqueue(l)
 		return "", err
 	} else {
 		row.Scan(&ItemDesc)
@@ -212,17 +215,20 @@ func GetItemDesc(Repository, Dataitem string) (ItemDesc string, err error) {
 func CreateTable() (err error) {
 	_, err = g_ds.Create(ds.Create_dh_dp)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	_, err = g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	_, err = g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	return
@@ -233,13 +239,15 @@ func UpdateSql04To05() (err error) {
 	TrimRightDpconn := `update DH_DP set DPCONN =substr(DPCONN,0,length(DPCONN)) where DPCONN like '%/';`
 	_, err = g_ds.Update(TrimRightDpconn)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	UpDhDp := `UPDATE DH_DP SET DPCONN=DPCONN||"/"||DPNAME;`
 	_, err = g_ds.Update(UpDhDp)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 
@@ -247,12 +255,14 @@ func UpdateSql04To05() (err error) {
 	RenameDpRpdmMap := "ALTER TABLE DH_DP_RPDM_MAP RENAME TO OLD_DH_DP_RPDM_MAP;"
 	_, err = g_ds.Exec(RenameDpRpdmMap)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	_, err = g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	InsertDpRpdmMap := `INSERT INTO DH_DP_RPDM_MAP(RPDMID, REPOSITORY, DATAITEM, DPID, ITEMDESC
@@ -262,12 +272,14 @@ func UpdateSql04To05() (err error) {
 	DropOldDpRpdmMap := `DROP TABLE OLD_DH_DP_RPDM_MAP;`
 	_, err = g_ds.Insert(InsertDpRpdmMap)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	_, err = g_ds.Drop(DropOldDpRpdmMap)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 
@@ -275,12 +287,14 @@ func UpdateSql04To05() (err error) {
 	RenameTagMap := "ALTER TABLE DH_RPDM_TAG_MAP RENAME TO OLD_DH_RPDM_TAG_MAP;"
 	_, err = g_ds.Exec(RenameTagMap)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	_, err = g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	InsertTagMap := `INSERT INTO DH_RPDM_TAG_MAP(TAGID, TAGNAME, RPDMID, DETAIL, CREATE_TIME, STATUS) 
@@ -288,12 +302,14 @@ func UpdateSql04To05() (err error) {
 	DropOldTagMap := `DROP TABLE OLD_DH_RPDM_TAG_MAP;`
 	_, err = g_ds.Insert(InsertTagMap)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	_, err = g_ds.Drop(DropOldTagMap)
 	if err != nil {
-		log.Error(err)
+		l := log.Error(err)
+		logq.LogPutqueue(l)
 		return err
 	}
 	log.Info("update db successfully!")

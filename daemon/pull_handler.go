@@ -7,6 +7,7 @@ import (
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
+	"github.com/asiainfoLDP/datahub/utils/logq"
 	"github.com/julienschmidt/httprouter"
 	"io"
 	"io/ioutil"
@@ -40,7 +41,8 @@ func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	dpexist := CheckDataPoolExist(p.Datapool)
 	if dpexist == false {
 		e := fmt.Sprintf("Datapool:%s not exist!", p.Datapool)
-		log.Error(e)
+		l := log.Error(e)
+		logq.LogPutqueue(l)
 		msgret := ds.Result{Code: cmd.ErrorDatapoolNotExits, Msg: e}
 		resp, _ := json.Marshal(msgret)
 		w.WriteHeader(http.StatusBadRequest)
@@ -122,7 +124,8 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 		//os.MkdirAll(g_strDpPath+"/"+p.ItemDesc, 0777)
 		//destfilename = g_strDpPath + "/" + p.ItemDesc + "/" + p.DestName
 		e := fmt.Sprintf("datapool:%s not exist!", p.Datapool)
-		log.Error(e)
+		l := log.Error(e)
+		logq.LogPutqueue(l)
 		err = errors.New(e)
 		return 0, err
 	} else {
@@ -131,7 +134,8 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 			//os.MkdirAll(g_strDpPath+"/"+p.ItemDesc, 0777)
 			//destfilename = g_strDpPath + "/" + p.ItemDesc + "/" + p.DestName
 			e := fmt.Sprintf("dpconn is null! datapool:%s ", p.Datapool)
-			log.Error(e)
+			l := log.Error(e)
+			logq.LogPutqueue(l)
 			err = errors.New(e)
 			return 0, err
 		} else {
@@ -163,10 +167,11 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 	/*Save response body to file only when HTTP 2xx received. TODO*/
 	if err != nil || (resp != nil && resp.StatusCode/100 != 2) {
 		if resp != nil {
-			log.Error("http status code:", resp.StatusCode, err)
+			l := log.Error("http status code:", resp.StatusCode, err)
+			logq.LogPutqueue(l)
 			body, _ := ioutil.ReadAll(resp.Body)
-			log.Error("response Body:", string(body))
-
+			l = log.Error("response Body:", string(body))
+			logq.LogPutqueue(l)
 			msg := string(body)
 			if resp.StatusCode == 416 {
 				msg = destfilename + " has already been downloaded."

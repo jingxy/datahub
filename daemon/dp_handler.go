@@ -6,6 +6,7 @@ import (
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
+	"github.com/asiainfoLDP/datahub/utils/logq"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
 	"net/http"
@@ -22,7 +23,8 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 		reqJson := cmd.FormatDpCreate{}
 		err := json.Unmarshal(result, &reqJson)
 		if err != nil {
-			log.Error("invalid argument. json.Unmarshal error", err)
+			l := log.Error("invalid argument. json.Unmarshal error", err)
+			logq.LogPutqueue(l)
 			rw.Write([]byte(`{"Msg":"invalid argument."}`))
 			return
 		}
@@ -58,7 +60,8 @@ func dpPostOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Par
 				return
 			}
 			if err := os.MkdirAll(sdpDirName, 0777); err != nil {
-				log.Error(err, sdpDirName)
+				l := log.Error(err, sdpDirName)
+				logq.LogPutqueue(l)
 				msg.Msg = err.Error()
 			} else {
 				msg.Msg = fmt.Sprintf("dp create success. name:%s type:%s path:%s", reqJson.Name, reqJson.Type, sdpDirName)

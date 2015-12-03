@@ -9,6 +9,7 @@ import (
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
+	"github.com/asiainfoLDP/datahub/utils/logq"
 	"github.com/julienschmidt/httprouter"
 	"io"
 	"io/ioutil"
@@ -152,13 +153,15 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 	if isFileExists(DestFullPathFileName) == false {
 		errlog := fmt.Sprintf("%s is not found, please ensure %s is in dir:%s", DestFullPathFileName, FileName, DpItemFullPath)
-		log.Error(errlog)
+		l := log.Error(errlog)
+		logq.LogPutqueue(l)
 		HttpNoData(w, http.StatusBadRequest, cmd.ErrorFileNotExist, errlog)
 		return
 	}
 
 	if size, err := GetFileSize(DestFullPathFileName); err != nil {
-		log.Error("Get %s size error, %v", DestFullPathFileName, err)
+		l := log.Errorf("Get %s size error, %v", DestFullPathFileName, err)
+		logq.LogPutqueue(l)
 	} else {
 		pub.Comment += SizeToStr(size)
 		//fmt.Sprintf(" Size:%v ", size)
@@ -237,7 +240,8 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 func GetMetaAndSample(datapool, itemdesc string) (meta, sample string) {
 	dpconn := GetDataPoolDpconn(datapool)
 	if len(dpconn) == 0 || len(itemdesc) == 0 {
-		log.Errorf("dpconn:%s,  itemdesc:%s \n", dpconn, itemdesc)
+		l := log.Errorf("dpconn:%s or itemdesc:%s is empty", dpconn, itemdesc)
+		logq.LogPutqueue(l)
 		return
 	}
 	meta = GetMetaData(dpconn, itemdesc)
@@ -256,7 +260,8 @@ func GetMetaData(dpconn, itemdesc string) (meta string) {
 				meta = string(bytes)
 				return meta
 			} else {
-				log.Error(err)
+				l := log.Error(err)
+				logq.LogPutqueue(l)
 				return " "
 			}
 		}
@@ -274,7 +279,8 @@ func GetSampleData(dpconn, itemdesc string) (sample string) {
 				sample = string(bytes)
 				return sample
 			} else {
-				log.Error(err)
+				l := log.Error(err)
+				logq.LogPutqueue(l)
 			}
 		}
 	}
