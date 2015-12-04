@@ -134,11 +134,15 @@ func commToDaemon(method, path string, jsonData []byte) (resp *http.Response, er
 	//fmt.Println(method, path, string(jsonData))
 
 	req, err := http.NewRequest(strings.ToUpper(method), path, bytes.NewBuffer(jsonData))
+
 	if len(User.userName) > 0 {
 		req.SetBasicAuth(User.userName, User.password)
-	} else {
+	}
+
+	/* else {
 		req.Header.Set("Authorization", "Basic "+os.Getenv("DAEMON_USER_AUTH_INFO"))
 	}
+	*/
 	conn, err := net.Dial("unix", UnixSock)
 	if err != nil {
 		fmt.Println(err.Error())
