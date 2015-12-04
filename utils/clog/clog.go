@@ -57,6 +57,20 @@ func trace() string {
 	return fName + "() "
 }
 
+func tracef() string {
+	pc := make([]uintptr, 5) // at least 1 entry needed
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[1])
+	file, line := f.FileLine(pc[1])
+	fname := f.Name()
+
+	fName := strings.Split(fname, "/")[strings.Count(fname, "/")]
+	filename := strings.Split(file, "/")[strings.Count(file, "/")]
+
+	//return fmt.Sprintf("%s() ", f)
+	return fmt.Sprintf("[%s:%d]%s() ", filename, line, fName)
+}
+
 func SetLogLevel(level int) {
 	logLevel = level
 }
@@ -164,7 +178,7 @@ func Tracef(format string, a ...interface{}) (s string) {
 func Debug(a ...interface{}) (s string) {
 	checkLogEnv()
 	if logLevel >= LOG_LEVEL_DEBUG {
-		s = KBLU + "[DEBUG] " + KNRM + trace() + fmt.Sprintln(a...)
+		s = KBLU + "[DEBUG] " + KNRM + tracef() + fmt.Sprintln(a...)
 		log.Print(s)
 	}
 	return
@@ -173,7 +187,7 @@ func Debug(a ...interface{}) (s string) {
 func Debugf(format string, a ...interface{}) (s string) {
 	checkLogEnv()
 	if logLevel >= LOG_LEVEL_DEBUG {
-		s = KBLU + "[DEBUG] " + KNRM + trace() + fmt.Sprintf(format, a...)
+		s = KBLU + "[DEBUG] " + KNRM + tracef() + fmt.Sprintf(format, a...)
 		log.Print(s)
 	}
 	return
