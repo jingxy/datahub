@@ -17,7 +17,6 @@ func Pull(login bool, args []string) (err error) {
 	f.StringVar(&dstruc.DestName, []string{"-destname", "d"}, "", "indicates the name that tag will be stored as ")
 
 	if len(args) < 2 || (len(args) >= 2 && (args[0][0] == '-' || args[1][0] == '-')) {
-		fmt.Println("invalid argument..")
 		pullUsage()
 		return
 	}
@@ -111,6 +110,7 @@ func Pull(login bool, args []string) (err error) {
 }
 
 func pullUsage() {
-	fmt.Printf("usage: \n %s pull [[URL]/[REPO]/[ITEM][:TAG]]  DATAPOOL[://LOCATION]  [--destname]\n", os.Args[0])
+	fmt.Printf("Usage: %s pull [REPO]/[ITEM][:TAG]  DATAPOOL[://LOCATION]  [--destname]\n", os.Args[0])
+	fmt.Println("\nPull a tag from the provider\n")
 	fmt.Println("  --destname, -d = name  indicates the name that tag will be stored as")
 }

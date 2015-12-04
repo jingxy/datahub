@@ -132,10 +132,11 @@ func GetResultMsg(RespBody []byte, bprint bool) (sMsgResp string) {
 }
 
 func dpUsage() {
-	fmt.Printf("Usage: \n %s dp [DPNAME]\n", os.Args[0])
+	fmt.Printf("Usage: \n  %s dp [DATAPOOL]\n", os.Args[0])
+	fmt.Println("List all the datapools or one datapool\n")
 	dpcUseage()
-	//fmt.Printf(" %s dp create $DPNAME [--type] --conn=?\n", os.Args[0])
+	dprUseage()
+	//fmt.Printf("\n", os.Args[0])
 	//fmt.Println("  --type , -t, The type of datapool , file default")
 	//fmt.Println("  --conn, -c, datapool connection info, for datapool with type of file, it's dir")
-	fmt.Printf(" %s dp rm DPNAMEs\n", os.Args[0])
 }

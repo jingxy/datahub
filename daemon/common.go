@@ -146,8 +146,9 @@ func GetRpdmidDpidItemdesc(repo, item string) (rpdmid, dpid int, Itemdesc string
 func CheckTagExist(repo, item, tag string) (exits bool, err error) {
 	rpdmid, dpid, _ := GetRpdmidDpidItemdesc(repo, item)
 	if rpdmid == 0 || dpid == 0 {
-		fmt.Println("rpdmid, dpid ", rpdmid, dpid)
-		return false, errors.New("repo and dataitem not exist")
+		l := log.Errorf("dataitem is not exist, %s/%s, rpdmid:%d, dpid:%d", repo, item, rpdmid, dpid)
+		logq.LogPutqueue(l)
+		return false, errors.New(fmt.Sprintf("dataitem is not exist, %s/%s, rpdmid:%d, dpid:%d", repo, item, rpdmid, dpid))
 	}
 	sqlCheckTag := fmt.Sprintf("SELECT COUNT(1) FROM DH_RPDM_TAG_MAP WHERE RPDMID='%d' AND TAGNAME='%s' AND STATUS='A'", rpdmid, tag)
 	row, err := g_ds.QueryRow(sqlCheckTag)

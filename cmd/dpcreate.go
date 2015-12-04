@@ -10,9 +10,9 @@ import (
 )
 
 type FormatDpCreate struct {
-	Name string `json:"dpname"`
+	Name string `json:"dpname, omitempty"`
 	Type string `json:"dptype, omitempty"`
-	Conn string `json:"dpconn"`
+	Conn string `json:"dpconn, omitempty"`
 }
 
 var DataPoolTypes = []string{"file", "db", "hdfs", "jdbc", "s3", "api", "storm"}
@@ -102,8 +102,10 @@ func GetEnsure() bool {
 }
 
 func dpcUseage() {
-	fmt.Println("usage of datahub dp create:")
-	fmt.Println(" datahub dp create DATAPOOL [file://][ABSOLUTE PATH]")
-	fmt.Println(" e.g. datahub dp create dptest file:///home/user/test")
-	fmt.Println("      datahub dp create dptest /home/user/test")
+	fmt.Println("Usage of datahub dp create:")
+	fmt.Println("  datahub dp create DATAPOOL [file://][ABSOLUTE PATH]")
+	fmt.Println("  e.g. datahub dp create dptest file:///home/user/test")
+	fmt.Println("       datahub dp create dptest /home/user/test")
+	fmt.Println("Create a datapool\n")
+
 }

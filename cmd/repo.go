@@ -109,7 +109,8 @@ func Repo(login bool, args []string) (err error) {
 }
 
 func repoUsage() {
-	fmt.Printf("usage: %s repo [URL]/[REPO]/[ITEM]\n", os.Args[0])
+	fmt.Printf("Usage: %s repo [URL]/[REPO]/[ITEM]\n", os.Args[0])
+	fmt.Println("\nShow the repository , dataitem and tag")
 }
 
 func repoResp(icmd int, respbody []byte, repo, item, tag string) {

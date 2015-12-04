@@ -66,7 +66,7 @@ func Ep(needLogin bool, args []string) (err error) {
 }
 
 func epUsage() {
-	fmt.Printf("usage: %s ep [http://HOST:PORT]\n", os.Args[0])
+	fmt.Printf("Usage: %s ep [http://HOST:PORT]\n\nSpecify the entrypoint\n", os.Args[0])
 }
 
 func parseEp(s string) (ep string) {

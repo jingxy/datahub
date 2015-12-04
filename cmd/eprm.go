@@ -25,5 +25,6 @@ func EpRm(needLogin bool, args []string) (err error) {
 }
 
 func eprmUsage() {
-	fmt.Printf("usage: %s ep rm\n", os.Args[0])
+	fmt.Printf("Usage: %s ep rm\n", os.Args[0])
+	fmt.Println("\nRemove the entrypoint")
 }

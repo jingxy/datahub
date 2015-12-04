@@ -109,7 +109,7 @@ func dpGetAllHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 		result.Msg = "There isn't any datapool."
 		result.Code = cmd.ErrorNoRecord
 		resp, _ := json.Marshal(result)
-		fmt.Println(string(resp))
+		log.Println(string(resp))
 		rw.Write(resp)
 		return
 	}
@@ -123,6 +123,7 @@ func dpGetAllHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	r.ParseForm()
 	rw.WriteHeader(http.StatusOK)
+
 	dpname := ps.ByName("dpname")
 
 	/*In future, we need to get dptype in Json to surpport FILE\ DB\ SDK\ API datapool
@@ -135,7 +136,7 @@ func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 	}*/
 
 	onedp := cmd.FormatDpDetail{}
-	result := &ds.Result{Code: cmd.ResultOK, Data: &onedp}
+	result := &ds.Result{Code: cmd.ResultOK, Msg: "", Data: &onedp}
 
 	sqlTotal := fmt.Sprintf(`SELECT COUNT(*) FROM DH_DP 
 		WHERE STATUS = 'A' AND DPNAME = '%s'`, string(dpname))
@@ -189,9 +190,10 @@ func dpGetOneHandler(rw http.ResponseWriter, r *http.Request, ps httprouter.Para
 			onedp.Items = append(onedp.Items, item)
 		}
 	}
+
 	resp, _ := json.Marshal(result)
 	log.Println(string(resp))
-	fmt.Fprintln(rw, string(resp))
+	rw.Write(resp)
 
 }
 
