@@ -127,6 +127,7 @@ func PubTag(repo, item, tag string, p ds.PubPara, args []string) (err error) {
 func pubResp(url string, jsonData []byte, args []string) (err error) {
 	resp, err := commToDaemon("POST", "/repositories/"+url, jsonData)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	defer resp.Body.Close()

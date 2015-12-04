@@ -43,9 +43,16 @@ func Dp(needLogin bool, args []string) (err error) {
 	}
 
 	if len(args) == 0 {
-		resp, _ := commToDaemon("GET", "/datapools", nil)
+		resp, err := commToDaemon("GET", "/datapools", nil)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
 		defer resp.Body.Close()
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
 		if resp.StatusCode == 200 {
 			dpResp(false, body)
 		} else {
@@ -60,6 +67,10 @@ func Dp(needLogin bool, args []string) (err error) {
 			if len(v) > 0 && v[0] != '-' {
 				strdp := fmt.Sprintf("/datapools/%s", v)
 				resp, _ := commToDaemon("GET", strdp, nil)
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
 				defer resp.Body.Close()
 				body, _ := ioutil.ReadAll(resp.Body)
 				if resp.StatusCode == 200 {

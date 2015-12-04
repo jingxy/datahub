@@ -21,6 +21,10 @@ func DpRm(needLogin bool, args []string) (err error) {
 			if v[0] != '-' {
 
 				resp, _ := commToDaemon("DELETE", "/datapools/"+dp, nil)
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
 				defer resp.Body.Close()
 				showResponse(resp)
 			}

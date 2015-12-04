@@ -33,6 +33,7 @@ func Subs(login bool, args []string) (err error) {
 
 	resp, err := commToDaemon("GET", uri, nil)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	defer resp.Body.Close()
