@@ -116,8 +116,13 @@ $
 
 ```
 datahub dp rm $DPNAME
+```
 输出
+```
+%msg
+```
 例子
+```
 $ datahub dp rm testdp
 Datapool testdp with type:file removed successfully!
 $
