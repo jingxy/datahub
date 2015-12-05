@@ -162,9 +162,7 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 	req.Header.Set("Range", "bytes="+strconv.FormatInt(stat.Size(), 10)+"-")
 	log.Printf("%v bytes had already been downloaded.\n", stat.Size())
 
-	jobid := putToJobQueue(&p, destfilename, stat)
-
-	job := DatahubJob[jobid]
+	//job := DatahubJob[jobid]
 
 	resp, err := http.DefaultClient.Do(req)
 
@@ -204,6 +202,8 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 	w.Write(r)
 	c <- 1
 
+	jobid := putToJobQueue(&p, destfilename, stat)
+
 	n, err := io.Copy(out, resp.Body)
 	if err != nil {
 		out.Close()
@@ -211,9 +211,16 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 	}
 	out.Close()
 	log.Printf("%d bytes downloaded.", n)
-	job.Dlsize = stat.Size()
-	job.Stat = "finished"
-	DatahubJob[jobid] = job
+	//job.Dlsize = stat.Size()
+	//job.Stat = "finished"
+	//DatahubJob[jobid] = job
+	for k, j := range DatahubJob {
+		if j.ID == jobid {
+			DatahubJob[k].Stat = "finished"
+			DatahubJob[k].Dlsize = stat.Size()
+			updateJobStatus()
+		}
+	}
 
 	InsertTagToDb(dpexist, p)
 	return n, nil
@@ -278,7 +285,10 @@ func putToJobQueue(p *ds.DsPull, destfilename string, stat os.FileInfo) string {
 	job.Dlsize = stat.Size()
 	job.Stat = "downloading"
 	job.Tag = p.Repository + "/" + p.Dataitem + ":" + p.Tag
-	DatahubJob[jobid] = job
+	//DatahubJob[jobid] = job
+	DatahubJob = append(DatahubJob, job)
+
+	saveJobDB()
 
 	return jobid
 }

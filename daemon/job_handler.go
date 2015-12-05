@@ -9,16 +9,19 @@ import (
 	"net/http"
 )
 
-var DatahubJob = make(map[string]ds.JobInfo) //job[id]=JobInfo
+//var DatahubJob = make(map[string]ds.JobInfo) //job[id]=JobInfo
+var DatahubJob = []ds.JobInfo{} //job[id]=JobInfo
 
 func jobHandler(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	log.Trace("from", req.RemoteAddr, req.Method, req.URL.RequestURI(), req.Proto)
-
-	var joblist []ds.JobInfo
-	for _, job := range DatahubJob {
-		joblist = append(joblist, job)
-	}
-	r, _ := buildResp(0, "ok", joblist)
+	/*
+		var joblist []ds.JobInfo
+		for _, job := range DatahubJob {
+			joblist = append(joblist, job)
+		}
+	*/
+	//r, _ := buildResp(0, "ok", joblist)
+	r, _ := buildResp(0, "ok", DatahubJob)
 	w.WriteHeader(http.StatusOK)
 	w.Write(r)
 
@@ -30,7 +33,18 @@ func jobHandler(w http.ResponseWriter, req *http.Request, ps httprouter.Params) 
 
 func jobDetailHandler(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	log.Trace("from", req.RemoteAddr, req.Method, req.URL.RequestURI(), req.Proto)
-	http.Error(w, log.Info(req.URL.RequestURI()), http.StatusNotImplemented)
+	jobid := ps.ByName("id")
+
+	var job []ds.JobInfo
+	for _, v := range DatahubJob {
+		if v.ID == jobid {
+			job = append(job, v)
+		}
+	}
+
+	r, _ := buildResp(0, "ok", job)
+	w.WriteHeader(http.StatusOK)
+	w.Write(r)
 
 	return
 
@@ -38,14 +52,27 @@ func jobDetailHandler(w http.ResponseWriter, req *http.Request, ps httprouter.Pa
 
 func jobRmHandler(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	log.Trace("from", req.RemoteAddr, req.Method, req.URL.RequestURI(), req.Proto)
-	http.Error(w, log.Info(req.URL.RequestURI()), http.StatusNotImplemented)
+
+	jobid := ps.ByName("id")
+	msg, code, httpcode := fmt.Sprintf("job %s not found.", jobid), 4404, http.StatusNotFound
+	for idx, v := range DatahubJob {
+		if v.ID == jobid {
+			DatahubJob = append(DatahubJob[:idx], DatahubJob[idx+1:]...)
+			removeJobDB()
+			msg, code, httpcode = fmt.Sprintf("job %s deleted.", jobid), 0, http.StatusOK
+		}
+	}
+
+	r, _ := buildResp(code, msg, nil)
+	w.WriteHeader(httpcode)
+	w.Write(r)
 
 	return
 
 }
 
 func genJobID() (id string, err error) {
-	c := 8
+	c := 4
 	b := make([]byte, c)
 	_, err = rand.Read(b)
 	if err != nil {
@@ -53,4 +80,16 @@ func genJobID() (id string, err error) {
 		return
 	}
 	return fmt.Sprintf("%x", b), nil
+}
+
+func saveJobDB() {
+	fmt.Println("TODO save job info to db.")
+}
+
+func updateJobStatus() {
+	fmt.Println("TODO updata job stat to db.")
+}
+
+func removeJobDB() {
+	fmt.Println("TODO remove jobid from db")
 }
