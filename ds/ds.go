@@ -6,20 +6,6 @@ import (
 	"log"
 )
 
-type DsPull struct {
-	Tag        string `json:"tag"`
-	Datapool   string `json:"datapool"`
-	DestName   string `json:"destname"`
-	Repository string `json:"repository, omitempty"`
-	Dataitem   string `json:"dataitem, omitempty"`
-	ItemDesc   string `json:"itemdesc, omitempty"`
-}
-type Result struct {
-	Code int         `json:"code,omitempty"`
-	Msg  string      `json:"msg,omitempty"`
-	Data interface{} `json:"data,omitempty"`
-}
-
 const (
 	DB_DML_INSERT = "insert"
 	DB_DML_DELETE = "delete"
@@ -35,14 +21,37 @@ const (
 	DATAHUB_VERSION = "v0.5.2"
 )
 
+type DsPull struct {
+	Tag        string `json:"tag"`
+	Datapool   string `json:"datapool"`
+	DestName   string `json:"destname"`
+	Repository string `json:"repository, omitempty"`
+	Dataitem   string `json:"dataitem, omitempty"`
+	ItemDesc   string `json:"itemdesc, omitempty"`
+}
+
+type Result struct {
+	Code int         `json:"code,omitempty"`
+	Msg  string      `json:"msg,omitempty"`
+	Data interface{} `json:"data,omitempty"`
+}
 type MsgResp struct {
 	Msg string `json:"msg"`
+}
+
+type JobInfo struct {
+	ID     string `json:"id,omitempty"`
+	Tag    string `json:"tag,omitempty"`
+	Path   string `json:"path,omitempty"`
+	Stat   string `json:"stat,omitempty"`
+	Dlsize int64  `json:"size,omitempty"`
 }
 
 type DataItem struct {
 	Repository_name string `json:"repname,omitempty"`
 	Dataitem_name   string `json:"dataitem_name,omitempty"`
 }
+
 type Response struct {
 	Code int         `json:"code,omitempty"`
 	Msg  string      `json:"msg,omitempty"`
@@ -139,7 +148,6 @@ type Executer interface {
 	Update(cmd string) (interface{}, error)
 	QueryRaw(cmd string) (*sql.Rows, error)
 	QueryRaws(cmd string) (*sql.Rows, error)
-
 	Create(cmd string) (interface{}, error)
 	Drop(cmd string) (interface{}, error)
 }

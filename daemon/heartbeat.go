@@ -77,7 +77,7 @@ func HeartBeat() {
 	}
 }
 
-func getdaemonid() (id string) {
+func getDaemonid() (id string) {
 	fmt.Println("TODO get daemonid from db.")
 	s := `SELECT DAEMONID FROM DH_DAEMON;`
 	row, e := g_ds.QueryRow(s)
@@ -120,4 +120,12 @@ func saveDaemonID(id string) {
 
 func init() {
 	EntryPoint = os.Getenv("DAEMON_ENTRYPOINT")
+}
+
+func saveEntryPoint(ep string) {
+	fmt.Println("TODO save ep to db")
+}
+
+func delEntryPoint() {
+	fmt.Println("TODO remove ep from db.")
 }

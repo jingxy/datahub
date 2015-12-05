@@ -32,6 +32,7 @@ func epPostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 	EntryPoint = ep.Ep
+	saveEntryPoint(EntryPoint)
 
 	msg := ds.MsgResp{Msg: "OK. your entrypoint is: " + EntryPoint}
 
@@ -42,6 +43,7 @@ func epPostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 func epDeleteHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	EntryPoint = ""
+	delEntryPoint()
 	msg := ds.MsgResp{Msg: "OK. your entrypoint has been removed"}
 
 	resp, _ := json.Marshal(&msg)

@@ -162,6 +162,10 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 	req.Header.Set("Range", "bytes="+strconv.FormatInt(stat.Size(), 10)+"-")
 	log.Printf("%v bytes had already been downloaded.\n", stat.Size())
 
+	jobid := putToJobQueue(&p, destfilename, stat)
+
+	job := DatahubJob[jobid]
+
 	resp, err := http.DefaultClient.Do(req)
 
 	/*Save response body to file only when HTTP 2xx received. TODO*/
@@ -207,6 +211,10 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 	}
 	out.Close()
 	log.Printf("%d bytes downloaded.", n)
+	job.Dlsize = stat.Size()
+	job.Stat = "finished"
+	DatahubJob[jobid] = job
+
 	InsertTagToDb(dpexist, p)
 	return n, nil
 }
@@ -253,4 +261,24 @@ func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string
 	}
 	return "", "", errors.New("get access token error.")
 
+}
+
+func putToJobQueue(p *ds.DsPull, destfilename string, stat os.FileInfo) string {
+
+	var jobid string
+	var err error
+
+	if jobid, err = genJobID(); err != nil {
+		jobid = destfilename //ops...
+	}
+
+	job := ds.JobInfo{}
+	job.ID = jobid
+	job.Path = destfilename
+	job.Dlsize = stat.Size()
+	job.Stat = "downloading"
+	job.Tag = p.Repository + "/" + p.Dataitem + ":" + p.Tag
+	DatahubJob[jobid] = job
+
+	return jobid
 }
