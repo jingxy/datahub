@@ -79,11 +79,43 @@ func HeartBeat() {
 
 func getdaemonid() (id string) {
 	fmt.Println("TODO get daemonid from db.")
-	return
-
+	s := `SELECT DAEMONID FROM DH_DAEMON;`
+	row, e := g_ds.QueryRow(s)
+	if e != nil {
+		l := log.Error(s, "error.", e)
+		logq.LogPutqueue(l)
+		return
+	}
+	row.Scan(&id)
+	log.Info("daemon id is", id)
+	return id
 }
+
 func saveDaemonID(id string) {
-	fmt.Println("TODO save daemonid to db when srv returns code 0.")
+	log.Println("TODO save daemonid to db when srv returns code 0.")
+	count := `SELECT COUNT(*) FROM DH_DAEMON;`
+	row, err := g_ds.QueryRow(count)
+	if err != nil {
+		l := log.Error(count, "error.", err)
+		logq.LogPutqueue(l)
+	}
+	var c int
+	row.Scan(&c)
+	if c > 0 {
+		Update := fmt.Sprintf(`UPDATE DH_DAEMON SET DAEMONID='%s';`, id)
+		log.Debug(Update)
+		if _, e := g_ds.Update(Update); e != nil {
+			l := log.Error(Update, "error.", e)
+			logq.LogPutqueue(l)
+		}
+	} else {
+		Insert := fmt.Sprintf(`INSERT INTO DH_DAEMON (DAEMONID) VALUES ('%s');`, id)
+		log.Debug(c, Insert)
+		if _, e := g_ds.Insert(Insert); e != nil {
+			l := log.Error(Insert, "error.", e)
+			logq.LogPutqueue(l)
+		}
+	}
 }
 
 func init() {

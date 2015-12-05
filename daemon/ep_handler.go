@@ -25,6 +25,7 @@ func epGetHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 
 func epPostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
+	fmt.Println(string(reqBody))
 	ep := cmd.FormatEp{}
 	if err := json.Unmarshal(reqBody, &ep); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

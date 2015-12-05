@@ -56,12 +56,11 @@ func datapoolMonitor() {
 	}()
 
 	for filecheck, tag := range monitList {
-		l := log.Info("monitoring", filecheck, tag)
+		l := log.Debug("monitoring", filecheck, tag)
 		logq.LogPutqueue(l)
 		err = watcher.Add(filecheck)
 		if err != nil {
 			l := log.Errorf("checking %v %v error: %v", filecheck, tag, err)
-
 			logq.LogPutqueue(l)
 		}
 	}

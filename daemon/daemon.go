@@ -63,16 +63,16 @@ func dbinit() {
 		return
 	}
 	row.Scan(&RetDhRpdmTagMap)
-	if len(RetDhRpdmTagMap) == 0 {
-		g_ds.Create(ds.Create_dh_dp)
-		g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
-		g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
-	} else {
+	if len(RetDhRpdmTagMap) > 1 {
 		if false == strings.Contains(RetDhRpdmTagMap, "TAGID") {
 			UpdateSql04To05()
 		}
 	}
-
+	if err := CreateTable(); err != nil {
+		l := log.Error("Get CreateTable error!", err)
+		logq.LogPutqueue(l)
+		return
+	}
 }
 
 func chk(err error) {

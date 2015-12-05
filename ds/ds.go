@@ -126,6 +126,13 @@ const Create_dh_repo_ditem_tag_map string = `CREATE TABLE IF NOT EXISTS
         STATUS       CHAR(2)
     );`
 
+const CreateDhDaemon string = `CREATE TABLE IF NOT EXISTS 
+    DH_DAEMON (  
+    	DAEMONID       VARCHAR(64),
+        ENTRYPOINT     VARCHAR(128),
+        STATUS         CHAR(2)
+    );`
+
 type Executer interface {
 	Insert(cmd string) (interface{}, error)
 	Delete(cmd string) (interface{}, error)
