@@ -9,18 +9,18 @@ func TestDprm(t *testing.T) {
 
 	var cargs = []string{testdpnames[0], "--type=file", "--conn=/var/lib/datahub/test"}
 	if err := DpCreate(false, cargs); err != nil {
-		t.Fatalf("DpCreate error: %v", err)
+		t.Errorf("DpCreate error: %v", err)
 	}
 	if err := DpRm(false, []string{testdpnames[0]}); err != nil {
-		t.Fatalf("DpRm error:%v", err)
+		t.Errorf("DpRm error:%v", err)
 	}
 
 	var dargs = []string{testdpnames[1], "--type=file", "--conn=unittest"}
 	if err := DpCreate(false, dargs); err != nil {
-		t.Fatalf("DpCreate error: %v", err)
+		t.Errorf("DpCreate error: %v", err)
 	}
 	if err := DpRm(false, []string{testdpnames[1]}); err != nil {
-		t.Fatalf("DpRm error:%v", err)
+		t.Errorf("DpRm error:%v", err)
 	}
 
 }
