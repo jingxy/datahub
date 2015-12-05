@@ -17,6 +17,7 @@ var cmdhelps = []CmdHelp{
 	{"pull", pullUsage},
 	{"repo", repoUsage},
 	{"subs", subsUsage},
+	{"version", verUsage},
 }
 
 func Help(login bool, args []string) (err error) {

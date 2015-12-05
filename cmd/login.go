@@ -72,5 +72,5 @@ func Login(login bool, args []string) (err error) {
 	*/
 }
 func loginUsage() {
-	fmt.Printf("usage: %s no parameter\n", os.Args[0])
+	fmt.Printf("Usage: %s no parameter\n\nSend a login request to the datahub server using your user name and password\n", os.Args[0])
 }

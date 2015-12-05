@@ -1,6 +1,16 @@
 package cmd
 
+import (
+	"fmt"
+	"github.com/asiainfoLDP/datahub/utils/mflag"
+)
+
 func DpRm(needLogin bool, args []string) (err error) {
+	f := mflag.NewFlagSet("dp rm", mflag.ContinueOnError)
+	f.Usage = dprUseage
+	if err = f.Parse(args); err != nil {
+		return err
+	}
 	if needLogin && !Logged {
 		login(false)
 	}
@@ -11,10 +21,20 @@ func DpRm(needLogin bool, args []string) (err error) {
 			if v[0] != '-' {
 
 				resp, _ := commToDaemon("DELETE", "/datapools/"+dp, nil)
+				if err != nil {
+					fmt.Println(err)
+					return err
+				}
 				defer resp.Body.Close()
 				showResponse(resp)
 			}
 		}
 	}
 	return nil
+}
+
+func dprUseage() {
+	fmt.Println("Usage of datahub dp rm:")
+	fmt.Println("  datahub dp rm DATAPOOL")
+	fmt.Println("Remove a datapool")
 }

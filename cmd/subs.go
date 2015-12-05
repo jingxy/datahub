@@ -33,6 +33,7 @@ func Subs(login bool, args []string) (err error) {
 
 	resp, err := commToDaemon("GET", uri, nil)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -61,7 +62,8 @@ func Subs(login bool, args []string) (err error) {
 }
 
 func subsUsage() {
-	fmt.Printf("usage: %s subs [URL]/[REPO]/[ITEM]\n", os.Args[0])
+	fmt.Printf("Usage: %s subs [URL]/[REPO]/[ITEM]\n", os.Args[0])
+	fmt.Println("\nList the repositories and dataitems which have been subscribed")
 }
 
 func subsResp(detail bool, respbody []byte, repoitem string) {

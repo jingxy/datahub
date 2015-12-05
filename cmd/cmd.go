@@ -231,6 +231,7 @@ func ShowUsage() {
 	fmt.Println("Usage:\tdatahub COMMAND [arg...]")
 	fmt.Println("\tdatahub COMMAND [ --help ]")
 	fmt.Println("\tdatahub help [COMMAND]\n")
+	fmt.Println("A client for Datahub to publish and pull data\n")
 	fmt.Println("Commands:")
 	for _, v := range Cmd {
 		fmt.Printf("    %-10s%s\n", v.Name, v.Desc)

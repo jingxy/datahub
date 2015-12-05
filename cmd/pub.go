@@ -20,7 +20,6 @@ const (
 )
 
 func Pub(needlogin bool, args []string) (err error) {
-	usage := "usage: datahub pub repository/dataitem DPNAME://ITEMDESC \n\t datahub pub repository/dataitem:tag TAGDETAIL"
 	if len(args) < 2 {
 		//fmt.Println(usage)
 		pubUsage()
@@ -44,14 +43,9 @@ func Pub(needlogin bool, args []string) (err error) {
 	//fmt.Println(pub.Accesstype)
 	//fmt.Println(pub.Comment)
 	if len(args[0]) == 0 || len(args[1]) == 0 {
-		fmt.Println(usage)
+		pubUsage()
 		return errors.New("need item or tag error!")
 	}
-
-	/*if len(f.Args()) > 0 {
-		fmt.Printf("invalid argument.\nSee '%s --help'.\n", f.Name())
-		return errors.New("invalid argument")
-	}*/
 
 	argfi = strings.Trim(args[0], "/")
 	//deal arg[0]
@@ -133,6 +127,7 @@ func PubTag(repo, item, tag string, p ds.PubPara, args []string) (err error) {
 func pubResp(url string, jsonData []byte, args []string) (err error) {
 	resp, err := commToDaemon("POST", "/repositories/"+url, jsonData)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -170,8 +165,11 @@ func pubResp(url string, jsonData []byte, args []string) (err error) {
 }
 
 func pubUsage() {
-	fmt.Printf("usage: \n %s pub REPO/DATAITEM  DPNAME://ITEMDESC, --accesstype=?\n", os.Args[0])
+	fmt.Printf("Usage: \n  %s pub REPO/DATAITEM  DPNAME://ITEMDESC\n", os.Args[0])
+	fmt.Println("Publish a dataitem\n")
+	fmt.Printf("  %s pub REPO/DATAITEM:TAG TAGDETAIL\n", os.Args[0])
+	fmt.Println("Publish a tag\n")
+	fmt.Println("Options:\n")
 	fmt.Println("  --accesstype,-t   Specify the access type of the dataitem:public or private, default private")
-	fmt.Printf("%s pub REPO/DATAITEM:Tag TAGDETAIL\n", os.Args[0])
 	fmt.Println("  --comment,-m      Comments about the item or tag")
 }
