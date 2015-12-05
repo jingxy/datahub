@@ -38,6 +38,8 @@ Datahub CLI是datahub-client的命令行客户端，用来执行datahub相关命
     - 下载数据
 - pub
     - 发布数据
+- help
+    - 帮助命令
 
 ### Datahub Client 命令行使用说明
 ---
@@ -92,11 +94,10 @@ $
 
 ##### 1.3. 创建数据池
 
-- 目前只支持本地目录形式的数据池创建。使用参数dpconn指定绝对路径，当没有设定dpconn选项时，会默认创建到/var/lib/datahub。
+- 目前只支持本地目录形式的数据池创建。
 
 ```shell
-datahub dp create $DPNAME [--type=$dptype]
-[--conn=$dpconn]
+datahub dp create $DPNAME [file://][ABSOLUTE PATH]
 ```
 输出
 ```
@@ -104,8 +105,8 @@ datahub dp create $DPNAME [--type=$dptype]
 ```
 例子
 ```
-$ datahub dp create dp1 --type=file --conn=/home/daemon/dp1
-dp1 created as /home/daemon/dp1
+$ datahub dp create testdp file:///var/lib/datahub/testdp
+dp create success. name:testdp type:file path:/var/lib/datahub/testdp
 $
 ```
 
@@ -117,8 +118,8 @@ $
 datahub dp rm $DPNAME
 输出
 例子
-$ datahub dp rm dp1
-ok
+$ datahub dp rm testdp
+Datapool testdp with type:file removed successfully!
 $
 ```
 
@@ -281,15 +282,20 @@ Usage of %CMD %SUBCMD
 ```
 例子
 ```
-$ datahub help dp create
-Usage of dp create:
+$datahub help dp
+Usage: 
+  datahub dp [DATAPOOL]
+List all the datapools or one datapool
 
---conn=            datapool connection info
---name=            datapool name
---type, -T=file    datapool type
-$ datahub help dp
-Usage of dp:
+Usage of datahub dp create:
+  datahub dp create DATAPOOL [file://][ABSOLUTE PATH]
+  e.g. datahub dp create dptest file:///home/user/test
+       datahub dp create dptest /home/user/test
+Create a datapool
 
-dp [create | rm] <dpname>
+Usage of datahub dp rm:
+  datahub dp rm DATAPOOL
+Remove a datapool
+$
 ```
 
