@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/asiainfoLDP/datahub/ds"
 	"github.com/asiainfoLDP/datahub/utils/mflag"
 	"io/ioutil"
 	"net/http"
@@ -33,15 +35,16 @@ func Job(needLogin bool, args []string) (err error) {
 	if resp.StatusCode != http.StatusOK {
 		showResponse(resp)
 	} else {
-		body, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(body))
+		//body, _ := ioutil.ReadAll(resp.Body)
+		//fmt.Println(string(body))
+		jobResp(resp)
 	}
 
 	return err
 }
 
 func JobRm(needLogin bool, args []string) (err error) {
-	fmt.Println("job rm called.")
+
 	f := mflag.NewFlagSet("datahub job rm", mflag.ContinueOnError)
 	fForce := f.Bool([]string{"-force", "f"}, false, "force cancel a pulling job.")
 
@@ -65,16 +68,31 @@ func JobRm(needLogin bool, args []string) (err error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusOK {
 		showResponse(resp)
 	} else {
-		//showjobResp(resp)
-		body, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(body))
+		showError(resp)
 	}
 	return err
 }
 
 func jobUsage() {
 	fmt.Println("Usage: datahub job [-a]")
+}
+
+func jobResp(resp *http.Response) {
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	d := []ds.JobInfo{}
+	result := ds.Result{Data: &d}
+	err := json.Unmarshal(body, &result)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		n, _ := fmt.Printf("%-8s\t%-10s\t%s\n", "JOBID", "STATUS", "TAG")
+		printDash(n + 11)
+		for _, job := range d {
+			fmt.Printf("%-8s\t%-10s\t%s\n", job.ID, job.Stat, job.Tag)
+		}
+	}
 }

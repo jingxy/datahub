@@ -40,11 +40,11 @@ type MsgResp struct {
 }
 
 type JobInfo struct {
-	ID     string `json:"id,omitempty"`
-	Tag    string `json:"tag,omitempty"`
-	Path   string `json:"path,omitempty"`
-	Stat   string `json:"stat,omitempty"`
-	Dlsize int64  `json:"size,omitempty"`
+	ID     string `json:"id"`
+	Tag    string `json:"tag"`
+	Path   string `json:"path"`
+	Stat   string `json:"stat"`
+	Dlsize int64  `json:"size"`
 }
 
 type DataItem struct {
