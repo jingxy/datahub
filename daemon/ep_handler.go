@@ -14,7 +14,13 @@ func epGetHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	msg := ds.MsgResp{}
 
 	if len(EntryPoint) == 0 {
-		msg.Msg = "you don't have any entrypoint."
+		EntryPoint = getEntryPoint()
+		if len(EntryPoint) == 0 {
+			msg.Msg = "you don't have any entrypoint."
+		} else {
+			msg.Msg = EntryPoint + " " + EntryPointStatus
+		}
+
 	} else {
 		msg.Msg = EntryPoint + " " + EntryPointStatus
 	}
