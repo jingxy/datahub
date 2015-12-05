@@ -201,8 +201,8 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 	w.WriteHeader(http.StatusOK)
 	w.Write(r)
 	c <- 1
-
-	jobid := putToJobQueue(&p, destfilename, stat)
+	jobtag := p.Repository + "/" + p.Dataitem + ":" + p.Tag
+	jobid := putToJobQueue(jobtag, destfilename, "downloading")
 
 	n, err := io.Copy(out, resp.Body)
 	if err != nil {
@@ -214,13 +214,7 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 	//job.Dlsize = stat.Size()
 	//job.Stat = "finished"
 	//DatahubJob[jobid] = job
-	for k, j := range DatahubJob {
-		if j.ID == jobid {
-			DatahubJob[k].Stat = "finished"
-			DatahubJob[k].Dlsize = stat.Size()
-			updateJobStatus()
-		}
-	}
+	updateJobQueue(jobid, "downloaded")
 
 	InsertTagToDb(dpexist, p)
 	return n, nil
@@ -270,7 +264,7 @@ func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string
 
 }
 
-func putToJobQueue(p *ds.DsPull, destfilename string, stat os.FileInfo) string {
+func putToJobQueue(tag, destfilename, stat string /*, stat os.FileInfo*/) string {
 
 	var jobid string
 	var err error
@@ -282,13 +276,22 @@ func putToJobQueue(p *ds.DsPull, destfilename string, stat os.FileInfo) string {
 	job := ds.JobInfo{}
 	job.ID = jobid
 	job.Path = destfilename
-	job.Dlsize = stat.Size()
-	job.Stat = "downloading"
-	job.Tag = p.Repository + "/" + p.Dataitem + ":" + p.Tag
+	//job.Dlsize = stat.Size()
+	job.Stat = stat
+	job.Tag = tag
 	//DatahubJob[jobid] = job
 	DatahubJob = append(DatahubJob, job)
 
 	saveJobDB()
 
 	return jobid
+}
+
+func updateJobQueue(jobid, stat string) {
+	for k, j := range DatahubJob {
+		if j.ID == jobid {
+			DatahubJob[k].Stat = stat
+			updateJobStatus()
+		}
+	}
 }

@@ -82,6 +82,7 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	log.Println(sRepoName, sDataItem, sTag)
+	jobtag := fmt.Sprintf("%s/%s:%s", sRepoName, sDataItem, sTag)
 	var irpdmid, idpid int
 	var stagdetail, sdpname, sdpconn, itemdesc string
 	msg := &ds.MsgResp{}
@@ -127,6 +128,7 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if exists := isFileExists(filepathname); !exists {
 		l := log.Error(filepathname, "not found")
 		logq.LogPutqueue(l)
+		putToJobQueue(jobtag, filepathname, "N/A")
 		msg.Msg = fmt.Sprintf("tag:%s not found", sTag)
 		resp, _ := json.Marshal(msg)
 		respStr := string(resp)
@@ -139,11 +141,16 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	//rw.Header().Set("Source-FileName", stagdetail)
 	l = log.Info("transfering", filepathname)
 	logq.LogPutqueue(l)
-	http.ServeFile(rw, r, filepathname)
 
-	resp, _ := json.Marshal(msg)
-	respStr := string(resp)
-	fmt.Fprintln(rw, respStr)
+	jobid := putToJobQueue(jobtag, filepathname, "transfering")
+	http.ServeFile(rw, r, filepathname)
+	updateJobQueue(jobid, "transfered")
+
+	/*
+		resp, _ := json.Marshal(msg)
+		respStr := string(resp)
+		fmt.Fprintln(rw, respStr)
+	*/
 	return
 }
 
