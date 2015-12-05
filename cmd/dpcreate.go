@@ -18,7 +18,7 @@ type FormatDpCreate struct {
 var DataPoolTypes = []string{"file", "db", "hdfs", "jdbc", "s3", "api", "storm"}
 
 func DpCreate(needLogin bool, args []string) (err error) {
-	f := mflag.NewFlagSet("dp create", mflag.ContinueOnError)
+	f := mflag.NewFlagSet("datahub dp create", mflag.ContinueOnError)
 	d := FormatDpCreate{}
 	//f.StringVar(&d.Type, []string{"-type", "t"}, "file", "datapool type")
 	//f.StringVar(&d.Conn, []string{"-conn", "c"}, "", "datapool connection info")
@@ -92,7 +92,8 @@ func GetEnsure() bool {
 	reader := bufio.NewReader(os.Stdin)
 	en, _ := reader.ReadBytes('\n')
 	ens := strings.Trim(string(en), "\n")
-	Yes := []string{"y", "yes", "Yes", "Y", "YES"}
+	ens = strings.ToLower(ens)
+	Yes := []string{"y", "yes"}
 	for _, y := range Yes {
 		if ens == y {
 			return true

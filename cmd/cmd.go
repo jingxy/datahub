@@ -70,37 +70,7 @@ var Cmd = []Command{
 				Handler: DpRm,
 			},
 		},
-		Desc: "list all of datapools.",
-	},
-	{
-		Name:      "repo",
-		Handler:   Repo,
-		Desc:      "Repostories mangement",
-		NeedLogin: true,
-	},
-	{
-		Name:      "pub",
-		Handler:   Pub,
-		Desc:      "publish item or tag.",
-		NeedLogin: true,
-	},
-	{
-		Name:      "subs",
-		Handler:   Subs,
-		Desc:      "subscription of item.",
-		NeedLogin: true,
-	},
-	{
-		Name:      "pull",
-		Handler:   Pull,
-		Desc:      "pull item from peer.",
-		NeedLogin: true,
-	},
-	{
-		Name:      "login",
-		Handler:   Login,
-		Desc:      "login to dataos.io.",
-		NeedLogin: true,
+		Desc: "datapools management",
 	},
 	{
 		Name:    "ep",
@@ -112,6 +82,49 @@ var Cmd = []Command{
 			},
 		},
 		Desc: "entrypoint management",
+	},
+	{
+		Name:    "job",
+		Handler: Job,
+		SubCmd: []Command{
+			{
+				Name:    "rm",
+				Handler: JobRm,
+			},
+		},
+		Desc: "datahub transfer job management",
+	},
+	{
+		Name:      "login",
+		Handler:   Login,
+		Desc:      "login to hub.dataos.io",
+		NeedLogin: true,
+	},
+
+	{
+		Name:      "pub",
+		Handler:   Pub,
+		Desc:      "publish dataitem or tag",
+		NeedLogin: true,
+	},
+
+	{
+		Name:      "pull",
+		Handler:   Pull,
+		Desc:      "pull dataitem from peer",
+		NeedLogin: true,
+	},
+	{
+		Name:      "repo",
+		Handler:   Repo,
+		Desc:      "repostories mangement",
+		NeedLogin: true,
+	},
+	{
+		Name:      "subs",
+		Handler:   Subs,
+		Desc:      "subscription of items",
+		NeedLogin: true,
 	},
 	{
 		Name:    "version",
@@ -169,7 +182,8 @@ func printDash(n int) {
 
 func showResponse(resp *http.Response) {
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println(resp.StatusCode)
+		body, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(resp.StatusCode, string(body))
 		return
 	}
 

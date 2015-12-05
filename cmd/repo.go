@@ -82,6 +82,7 @@ func Repo(login bool, args []string) (err error) {
 	//fmt.Println(uri)
 	resp, err := commToDaemon("get", uri, nil)
 	defer resp.Body.Close()
+
 	body, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
 		repoResp(icmd, body, repo, item, tag)
@@ -103,6 +104,7 @@ func Repo(login bool, args []string) (err error) {
 		}
 	} else {
 		fmt.Println(resp.StatusCode)
+
 	}
 
 	return err

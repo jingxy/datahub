@@ -18,18 +18,19 @@ func expect(t *testing.T, a interface{}, b interface{}) {
 func TestLog(t *testing.T) {
 	SetLogLevel(LOG_LEVEL_DEBUG)
 	logstr := "hello world!!"
-	Infof("%s", logstr)
-	Debugf("%s", logstr)
-	Errorf("%s", logstr)
-	Warnf("%s", logstr)
-	Tracef("%s", logstr)
-	Printf("%s", logstr)
-	Info(logstr)
-	Debug(logstr)
-	Error(logstr)
-	Warn(logstr)
-	Trace(logstr)
-	Println(logstr)
+	logstr2 := "goodbye world."
+	Infof("%s, %s", logstr, logstr2)
+	Debugf("%s, %s", logstr, logstr2)
+	Errorf("%s, %s", logstr, logstr2)
+	Warnf("%s, %s", logstr, logstr2)
+	Tracef("%s, %s", logstr, logstr2)
+	Printf("%s, %s", logstr, logstr2)
+	Info(logstr, logstr2)
+	Debug(logstr, logstr2)
+	Error(logstr, logstr2)
+	Warn(logstr, logstr2)
+	Trace(logstr, logstr2)
+	Println(logstr, logstr2)
 	t.Log("TEST OK")
 
 }
