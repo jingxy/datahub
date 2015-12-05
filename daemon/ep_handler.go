@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
 	"net/http"
@@ -31,7 +32,6 @@ func epGetHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 
 func epPostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	fmt.Println(string(reqBody))
 	ep := cmd.FormatEp{}
 	if err := json.Unmarshal(reqBody, &ep); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -41,7 +41,7 @@ func epPostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	saveEntryPoint(EntryPoint)
 
 	msg := ds.MsgResp{Msg: "OK. your entrypoint is: " + EntryPoint}
-
+	log.Info(msg.Msg)
 	resp, _ := json.Marshal(&msg)
 	fmt.Fprintln(w, string(resp))
 	return

@@ -3,6 +3,8 @@ package daemon
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/asiainfoLDP/datahub/cmd"
+	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/asiainfoLDP/datahub/utils/logq"
 	"io/ioutil"
@@ -46,7 +48,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 
 		return
@@ -64,7 +66,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		token := &tk{}
 		if err = json.Unmarshal(body, token); err != nil {
-			log.Println(err)
+			log.Error(err)
 			//w.WriteHeader(resp.StatusCode)
 			w.WriteHeader(http.StatusServiceUnavailable)
 			w.Write(body)
@@ -90,8 +92,16 @@ func commToServer(method, path string, buffer []byte, w http.ResponseWriter) (re
 
 	//req.Header.Set("User", "admin")
 	if resp, err = http.DefaultClient.Do(req); err != nil {
+		log.Error(err)
+		d := ds.Result{Code: cmd.ErrorServiceUnavailable, Msg: err.Error()}
+		body, err := json.Marshal(d)
+		if err != nil {
+			log.Error(err)
+			return resp, err
+		}
 		w.WriteHeader(http.StatusServiceUnavailable)
-		return
+		w.Write(body)
+		return resp, err
 	}
 	defer resp.Body.Close()
 

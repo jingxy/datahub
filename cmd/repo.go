@@ -87,14 +87,16 @@ func Repo(login bool, args []string) (err error) {
 	}
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode == 200 {
+		body, _ := ioutil.ReadAll(resp.Body)
 		repoResp(icmd, body, repo, item, tag)
 	} else if resp.StatusCode == 401 || resp.StatusCode == 400 {
+		body, _ := ioutil.ReadAll(resp.Body)
 		result := ds.Result{}
 		err := json.Unmarshal(body, &result)
 		if err != nil {
-			panic(err)
+			fmt.Println("http StatusCode:", resp.StatusCode, "Json format error!")
+			return err
 		}
 		if result.Code != 1400 {
 			fmt.Printf("ERROR[%v] %v\n", result.Code, result.Msg)
@@ -107,8 +109,7 @@ func Repo(login bool, args []string) (err error) {
 			fmt.Println(err)
 		}
 	} else {
-		fmt.Println(resp.StatusCode)
-
+		showError(resp)
 	}
 
 	return err

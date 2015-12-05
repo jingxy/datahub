@@ -38,9 +38,7 @@ func init() {
 	//defer db.Close()
 	chk(err)
 	g_ds.Db = db
-	g_ds.Create(ds.Create_dh_dp)
-	g_ds.Create(ds.Create_dh_dp_repo_ditem_map)
-	g_ds.Create(ds.Create_dh_repo_ditem_tag_map)
+	CreateTable()
 }
 
 var con = []Context{
