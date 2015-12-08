@@ -3,6 +3,7 @@ package daemon
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/asiainfoLDP/datahub/cmd"
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
@@ -41,7 +42,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	gstrUsername = userforjson.Username
-
 	log.Println("login to", url, "Authorization:", r.Header.Get("Authorization"))
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", r.Header.Get("Authorization"))
@@ -49,6 +49,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Error(err)
+		fmt.Println("test 55")
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 
 		return
@@ -60,6 +61,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if resp.StatusCode == 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println("test body", string(body))
 		log.Println(string(body))
 		type tk struct {
 			Token string `json:"token"`
@@ -94,10 +96,10 @@ func commToServer(method, path string, buffer []byte, w http.ResponseWriter) (re
 	if resp, err = http.DefaultClient.Do(req); err != nil {
 		log.Error(err)
 		d := ds.Result{Code: cmd.ErrorServiceUnavailable, Msg: err.Error()}
-		body, err := json.Marshal(d)
-		if err != nil {
-			log.Error(err)
-			return resp, err
+		body, e := json.Marshal(d)
+		if e != nil {
+			log.Error(e)
+			return resp, e
 		}
 		w.WriteHeader(http.StatusServiceUnavailable)
 		w.Write(body)
