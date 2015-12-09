@@ -3,6 +3,7 @@ package daemon
 import (
 	"fmt"
 	"github.com/asiainfoLDP/datahub/ds"
+	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"os"
 	"testing"
 )
@@ -120,19 +121,135 @@ func TestGetRpdmidDpidItemdesc(t *testing.T) {
 func TestCheckTagExist(t *testing.T) {
 	exist, e := CheckTagExist(testP.Repository, testP.Dataitem, testP.Tag)
 	if exist == false || e != nil {
+		t.Errorf("1.CheckTagExist fail-------- exist:%v, e:%v\n", exist, e)
+	} else {
+		t.Log("1.CheckTagExist success--------")
+	}
 
+	exist, e = CheckTagExist("No_this_repo", testP.Dataitem, testP.Tag)
+	if exist == false && e != nil {
+		t.Logf("2.CheckTagExist with a non-existent repository success-------- exist:%v, e:%v\n", exist, e)
+	} else {
+		t.Error("2.CheckTagExist with a non-existent repository fail--------")
 	}
 }
 
+func TestGetDpnameDpconnItemdesc(t *testing.T) {
+	dpname, dpconn, desc := GetDpnameDpconnItemdesc(testP.Repository, testP.Dataitem)
+	if dpname == testP.Datapool && dpconn == Conn && desc == testP.ItemDesc {
+		t.Log("1.GetDpnameDpconnItemdesc success--------")
+	} else {
+		t.Error("1.GetDpnameDpconnItemdesc fail--------", dpname, dpconn, desc)
+	}
+
+	dpname, dpconn, desc = GetDpnameDpconnItemdesc("No_this_repo", testP.Dataitem)
+	if dpname == "" && dpconn == "" && desc == "" {
+		t.Log("2.GetDpnameDpconnItemdesc with a non-existent repository success--------")
+	} else {
+		t.Error("2.GetDpnameDpconnItemdesc with a non-existent repository fail--------", dpname, dpconn, desc)
+	}
+}
+
+func TestInsertPubTagToDb(t *testing.T) {
+	tag := "tagTest2"
+	file := "tagTest2file.csv"
+	e := InsertPubTagToDb(testP.Repository, testP.Dataitem, tag, file)
+	if e == nil {
+		t.Log("1.InsertPubTagToDb success--------")
+	} else {
+		t.Error("1.InsertPubTagToDb fail--------", e)
+	}
+	if e := DeleteTagHard(tag); e != nil {
+		t.Errorf("Recover db for InsertPubTagToDb test fail. Delete %s error, %v", tag, e)
+	}
+
+	e = InsertPubTagToDb("No_this_repo", testP.Dataitem, tag, file)
+	if e != nil {
+		t.Log("2.InsertPubTagToDb with a non-existent repository success--------")
+	} else {
+		t.Error("2.InsertPubTagToDb with a non-existent repository fail--------", e)
+	}
+}
+
+func TestGetItemDesc(t *testing.T) {
+	desc, e := GetItemDesc(testP.Repository, testP.Dataitem) //+`'AND STATUS='`
+	if desc == testP.ItemDesc && e == nil {
+		t.Log("1.GetItemDesc success--------")
+	} else {
+		t.Error("1.GetItemDesc fail--------", desc, e)
+	}
+}
+
+func TestGetAllTagDetails(t *testing.T) {
+	var list map[string]string = make(map[string]string)
+	e := GetAllTagDetails(&list)
+	if e != nil {
+		t.Error("1.GetAllTagDetails fail--------", e)
+	} else {
+		t.Log("1.GetAllTagDetails success-------- list:", list)
+	}
+}
+
+func TestUpdateSql04To05(t *testing.T) {
+	if e := UpdateSql04To05(); e != nil {
+		t.Error("1.UpdateSql04To05 fail--------", e)
+	} else {
+		t.Log("1.UpdateSql04To05 success--------")
+	}
+}
+
+func Test_saveAndgetDaemonID(t *testing.T) {
+	id := "decfr49fj3nd8ek8"
+	saveDaemonID(id)
+	retid := getDaemonid()
+	if id != retid {
+		t.Errorf("1.saveAndgetDaemonID fail-------- id:%v, retid:%v", id, retid)
+	}
+
+	upid := "asdfghjkqwertyu3"
+	saveDaemonID(upid)
+	retid = getDaemonid()
+	if upid != retid {
+		t.Errorf("2.saveAndgetDaemonID fail-------- upid:%v, retid:%v", upid, retid)
+	}
+}
+
+func Test_saveEntryPoint(t *testing.T) {
+	ep := "http://127.0.0.1:34567"
+	saveEntryPoint(ep)
+	retep := getEntryPoint()
+	if ep == retep {
+		t.Log("1.save and get entrypoint success--------")
+	} else {
+		t.Errorf("1.save and get entrypoint fail-------- ep:%v, retep:%v", ep, retep)
+	}
+
+	ep = "http://192.168.8.12:34444"
+	saveEntryPoint(ep)
+	retep = getEntryPoint()
+	if ep == retep {
+		t.Log("2.save and get entrypoint success--------")
+	} else {
+		t.Errorf("2.save and get entrypoint fail-------- ep:%v, retep:%v", ep, retep)
+	}
+
+	delEntryPoint()
+}
+
 func TestRecover(t *testing.T) {
-	if e := DeleteDpHard(Name); e != nil {
-		t.Errorf("Recover db for common.go test fail. Delete %s error, %v", Name, e)
+	DeleteAllHard(Name, testP.Repository, testP.Dataitem, testP.Tag)
+	t.Log("Recover over")
+}
+
+func DeleteAllHard(dp, repo, item, tag string) {
+	if e := DeleteDpHard(dp); e != nil {
+		log.Errorf("Recover db for common.go test fail. Delete %s error, %v", dp, e)
 	}
-	if e := DeleteRepoItemHard(testP.Repository, testP.Dataitem); e != nil {
-		t.Errorf("Recover db for common.go test fail. Delete %s, %s error, %v", testP.Repository, testP.Dataitem, e)
+	if e := DeleteRepoItemHard(repo, item); e != nil {
+		log.Errorf("Recover db for common.go test fail. Delete %s, %s error, %v", repo, item, e)
 	}
-	if e := DeleteTagHard(testP.Tag); e != nil {
-		t.Errorf("Recover db for common.go test fail. Delete %s error, %v", testP.Tag, e)
+	if e := DeleteTagHard(tag); e != nil {
+		log.Errorf("Recover db for common.go test fail. Delete %s error, %v", tag, e)
 	}
 }
 

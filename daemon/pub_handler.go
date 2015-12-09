@@ -11,7 +11,7 @@ import (
 	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/asiainfoLDP/datahub/utils/logq"
 	"github.com/julienschmidt/httprouter"
-	"io"
+	//"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -138,6 +138,7 @@ func pubTagHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	repo := ps.ByName("repo")
 	item := ps.ByName("item")
 	tag := ps.ByName("tag")
+	fmt.Println("repo", repo, "item", item, "tag", tag)
 
 	//get DpFullPath and check whether repo/dataitem has been published
 	DpItemFullPath, err := CheckTagAndGetDpPath(repo, item, tag)
@@ -377,7 +378,7 @@ func RollBackTag(repo, item, tag string) {
 	}
 }
 
-func CopyFile(src, des string) (w int64, err error) {
+/*func CopyFile(src, des string) (w int64, err error) {
 	srcFile, err := os.Open(src)
 	if err != nil {
 		log.Println(err)
@@ -391,7 +392,7 @@ func CopyFile(src, des string) (w int64, err error) {
 	defer desFile.Close()
 
 	return io.Copy(desFile, srcFile)
-}
+}*/
 
 func DeleteItemOrTag(repo, item, tag string) (err error) {
 	uri := "/repositories/"

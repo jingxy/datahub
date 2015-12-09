@@ -1,26 +1,14 @@
 package daemon
 
 import (
-	//"errors"
 	"fmt"
-	//"net/url"
-	//"github.com/asiainfoLDP/datahub/cmd"
-	//"github.com/asiainfoLDP/datahub/daemon/daemonigo"
-	//"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
-	//"github.com/asiainfoLDP/datahub/utils/logq"
 	"github.com/julienschmidt/httprouter"
-	//"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"testing"
-	//"os"
-	//"os/signal"
 	"strings"
-	//"sync"
-	//"syscall"
-	//"time"
+	"testing"
 )
 
 func init() {
@@ -43,36 +31,8 @@ func testserver() {
 
 	tRouter := httprouter.New()
 	tRouter.GET("/", sayhello)
-	tRouter.GET("/pull/:repo/:dataitem/:tag", p2p_pull)
-	tRouter.GET("/health", p2pHealthyCheckHandler)
-	//tRouter.GET("/", helloHttp)
-	tRouter.POST("/datapools", dpPostOneHandler)
-	tRouter.GET("/datapools", dpGetAllHandler)
-	tRouter.GET("/datapools/:dpname", dpGetOneHandler)
-	tRouter.DELETE("/datapools/:dpname", dpDeleteOneHandler)
-
-	tRouter.GET("/ep", epGetHandler)
-	tRouter.POST("/ep", epPostHandler)
-	tRouter.DELETE("/ep", epDeleteHandler)
-
-	tRouter.GET("/repositories/:repo/:item/:tag", repoTagHandler)
-	tRouter.GET("/repositories/:repo/:item", repoItemHandler)
-	tRouter.GET("/repositories/:repo", repoRepoNameHandler)
-	tRouter.GET("/repositories", repoHandler)
-	tRouter.GET("/subscriptions", subsHandler)
-
-	tRouter.POST("/repositories/:repo/:item", pubItemHandler)
-	tRouter.POST("/repositories/:repo/:item/:tag", pubTagHandler)
-
-	tRouter.POST("/subscriptions/:repo/:item/pull", pullHandler)
-
-	tRouter.GET("/job", jobHandler)
-	tRouter.GET("/job/:id", jobDetailHandler)
-	tRouter.DELETE("/job/:id", jobRmHandler)
 
 	http.Handle("/", tRouter)
-	http.HandleFunc("/stop", stopHttp)
-	http.HandleFunc("/users/auth", loginHandler)
 
 	server := http.Server{Handler: tRouter}
 

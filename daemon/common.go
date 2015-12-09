@@ -7,6 +7,7 @@ import (
 	"github.com/asiainfoLDP/datahub/ds"
 	log "github.com/asiainfoLDP/datahub/utils/clog"
 	"github.com/asiainfoLDP/datahub/utils/logq"
+	"os"
 )
 
 func CheckDataPoolExist(datapoolname string) (bexist bool) {
@@ -35,11 +36,23 @@ func GetDataPoolDpconn(datapoolname string) (dpconn string) {
 	if err != nil {
 		l := log.Error("QueryRow error:", err)
 		logq.LogPutqueue(l)
-		return
+		return ""
 	} else {
 		row.Scan(&dpconn)
 		return dpconn
 	}
+}
+
+func GetDpconnByDpid(dpid int) (dpconn string) {
+	sSqlGetDpconn := fmt.Sprintf(`SELECT DPCONN FROM DH_DP WHERE DPID='%d'`, dpid)
+	row, err := g_ds.QueryRow(sSqlGetDpconn)
+	if err != nil {
+		l := log.Error("QueryRow error:", err)
+		logq.LogPutqueue(l)
+		return ""
+	}
+	row.Scan(&dpconn)
+	return
 }
 
 func GetDataPoolDpid(datapoolname string) (dpid int) {
@@ -323,7 +336,7 @@ func UpdateSql04To05() (err error) {
 	return
 }
 
-func GetTagDetails(monitList *map[string]string) (e error) {
+func GetAllTagDetails(monitList *map[string]string) (e error) {
 	sqlDp := `SELECT DPID, DPCONN FROM DH_DP WHERE DPTYPE='file' AND STATUS = 'A';`
 	rDps, e := g_ds.QueryRows(sqlDp)
 	if e != nil {
@@ -363,6 +376,113 @@ func GetTagDetails(monitList *map[string]string) (e error) {
 
 	}
 	return e
+}
+
+func GetTagDetail(rpdmid int, tag string) (detail string) {
+	sSqlGetTagDetail := fmt.Sprintf(`SELECT DETAIL FROM DH_RPDM_TAG_MAP 
+        WHERE RPDMID = '%d' AND TAGNAME = '%s' AND STATUS='A'`, rpdmid, tag)
+	row, err := g_ds.QueryRow(sSqlGetTagDetail)
+	if err != nil {
+		l := log.Error(err.Error())
+		logq.LogPutqueue(l)
+	}
+	row.Scan(&detail)
+	log.Println("tagdetail", detail)
+	return detail
+}
+
+func getDaemonid() (id string) {
+	log.Println("TODO get daemonid from db.")
+	s := `SELECT DAEMONID FROM DH_DAEMON;`
+	row, e := g_ds.QueryRow(s)
+	if e != nil {
+		l := log.Error(s, "error.", e)
+		logq.LogPutqueue(l)
+		return
+	}
+	row.Scan(&id)
+	log.Info("daemon id is", id)
+	return id
+}
+
+func saveDaemonID(id string) {
+	log.Println("TODO save daemonid to db when srv returns code 0.")
+	count := `SELECT COUNT(*) FROM DH_DAEMON;`
+	row, err := g_ds.QueryRow(count)
+	if err != nil {
+		l := log.Error(count, "error.", err)
+		logq.LogPutqueue(l)
+	}
+	var c int
+	row.Scan(&c)
+	if c > 0 {
+		Update := fmt.Sprintf(`UPDATE DH_DAEMON SET DAEMONID='%s';`, id)
+		log.Debug(Update)
+		if _, e := g_ds.Update(Update); e != nil {
+			l := log.Error(Update, "error.", e)
+			logq.LogPutqueue(l)
+		}
+	} else {
+		Insert := fmt.Sprintf(`INSERT INTO DH_DAEMON (DAEMONID) VALUES ('%s');`, id)
+		log.Debug(c, Insert)
+		if _, e := g_ds.Insert(Insert); e != nil {
+			l := log.Error(Insert, "error.", e)
+			logq.LogPutqueue(l)
+		}
+	}
+}
+
+func init() {
+	EntryPoint = os.Getenv("DAEMON_ENTRYPOINT")
+}
+
+func getEntryPoint() (ep string) {
+	log.Println("TODO get ep from db")
+	s := `SELECT ENTRYPOINT FROM DH_DAEMON;`
+	r, e := g_ds.QueryRow(s)
+	if e != nil {
+		l := log.Error(s, "error.", e)
+		logq.LogPutqueue(l)
+		return
+	}
+	r.Scan(&ep)
+	return ep
+}
+
+func saveEntryPoint(ep string) {
+	log.Println("TODO save ep to db")
+	count := `SELECT COUNT(*) FROM DH_DAEMON;`
+	row, err := g_ds.QueryRow(count)
+	if err != nil {
+		l := log.Error(count, "error.", err)
+		logq.LogPutqueue(l)
+	}
+	var c int
+	row.Scan(&c)
+	if c > 0 {
+		Update := fmt.Sprintf(`UPDATE DH_DAEMON SET ENTRYPOINT='%s';`, ep)
+		log.Debug(Update)
+		if _, e := g_ds.Update(Update); e != nil {
+			l := log.Error(Update, "error.", e)
+			logq.LogPutqueue(l)
+		}
+	} else {
+		Insert := fmt.Sprintf(`INSERT INTO DH_DAEMON (ENTRYPOINT) VALUES ('%s');`, ep)
+		log.Debug(c, Insert)
+		if _, e := g_ds.Insert(Insert); e != nil {
+			l := log.Error(Insert, "error.", e)
+			logq.LogPutqueue(l)
+		}
+	}
+}
+
+func delEntryPoint() {
+	log.Println("TODO remove ep from db.")
+	d := `UPDATE DH_DAEMON SET ENTRYPOINT = '';`
+	if _, e := g_ds.Update(d); e != nil {
+		l := log.Error(d, "error.", e)
+		logq.LogPutqueue(l)
+	}
 }
 
 func buildResp(code int, msg string, data interface{}) (body []byte, err error) {

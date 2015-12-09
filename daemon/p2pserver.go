@@ -84,29 +84,32 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	log.Println(sRepoName, sDataItem, sTag)
 	jobtag := fmt.Sprintf("%s/%s:%s", sRepoName, sDataItem, sTag)
 	var irpdmid, idpid int
-	var stagdetail, sdpname, sdpconn, itemdesc string
+	var stagdetail, sdpconn, itemdesc string
 	msg := &ds.MsgResp{}
 	msg.Msg = "OK."
 
-	sSqlGetRpdmidDpid := fmt.Sprintf(`SELECT DPID, RPDMID, ITEMDESC FROM DH_DP_RPDM_MAP 
-    	WHERE REPOSITORY = '%s' AND DATAITEM = '%s' AND STATUS='A'`, sRepoName, sDataItem)
-	row, err := g_ds.QueryRow(sSqlGetRpdmidDpid)
-	if err != nil {
-		msg.Msg = err.Error()
-	}
-	row.Scan(&idpid, &irpdmid, &itemdesc)
+	/*sSqlGetRpdmidDpid := fmt.Sprintf(`SELECT DPID, RPDMID, ITEMDESC FROM DH_DP_RPDM_MAP
+	    	WHERE REPOSITORY = '%s' AND DATAITEM = '%s' AND STATUS='A'`, sRepoName, sDataItem)
+		row, err := g_ds.QueryRow(sSqlGetRpdmidDpid)
+		if err != nil {
+			msg.Msg = err.Error()
+		}
+		row.Scan(&idpid, &irpdmid, &itemdesc)*/
+
+	idpid, irpdmid, itemdesc = GetRpdmidDpidItemdesc(sRepoName, sDataItem)
 	if len(itemdesc) == 0 {
 		itemdesc = sRepoName + "_" + sDataItem
 	}
 	log.Println("dpid:", idpid, "rpdmid:", irpdmid, "itemdesc:", itemdesc)
 
-	sSqlGetTagDetail := fmt.Sprintf(`SELECT DETAIL FROM DH_RPDM_TAG_MAP 
-        WHERE RPDMID = '%d' AND TAGNAME = '%s' AND STATUS='A'`, irpdmid, sTag)
-	tagrow, err := g_ds.QueryRow(sSqlGetTagDetail)
-	if err != nil {
-		msg.Msg = err.Error()
-	}
-	tagrow.Scan(&stagdetail)
+	/*sSqlGetTagDetail := fmt.Sprintf(`SELECT DETAIL FROM DH_RPDM_TAG_MAP
+	        WHERE RPDMID = '%d' AND TAGNAME = '%s' AND STATUS='A'`, irpdmid, sTag)
+		tagrow, err := g_ds.QueryRow(sSqlGetTagDetail)
+		if err != nil {
+			msg.Msg = err.Error()
+		}
+		tagrow.Scan(&stagdetail)*/
+	stagdetail = GetTagDetail(irpdmid, sTag)
 	log.Println("tagdetail", stagdetail)
 	if len(stagdetail) == 0 {
 		l := log.Warnf("%s(tag:%s) not found", stagdetail, sTag)
@@ -115,13 +118,14 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	sSqlGetDpconn := fmt.Sprintf(`SELECT DPNAME, DPCONN FROM DH_DP WHERE DPID='%d'`, idpid)
+	/*sSqlGetDpconn := fmt.Sprintf(`SELECT DPNAME, DPCONN FROM DH_DP WHERE DPID='%d'`, idpid)
 	dprow, err := g_ds.QueryRow(sSqlGetDpconn)
 	if err != nil {
 		msg.Msg = err.Error()
 	}
-	dprow.Scan(&sdpname, &sdpconn)
-	log.Println("dpname:", sdpname, "dpconn:", sdpconn)
+	dprow.Scan(&sdpname, &sdpconn)*/
+	sdpconn = GetDpconnByDpid(idpid)
+	log.Println("dpconn:", sdpconn)
 
 	filepathname := sdpconn + "/" + itemdesc + "/" + stagdetail
 	log.Println("filename:", filepathname)
@@ -135,7 +139,6 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		rw.WriteHeader(http.StatusNotFound)
 		fmt.Fprintln(rw, respStr)
 		return
-		//}
 	}
 	log.Println("Tag file full path name :", filepathname)
 	//rw.Header().Set("Source-FileName", stagdetail)
@@ -146,11 +149,6 @@ func p2p_pull(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	http.ServeFile(rw, r, filepathname)
 	updateJobQueue(jobid, "transfered")
 
-	/*
-		resp, _ := json.Marshal(msg)
-		respStr := string(resp)
-		fmt.Fprintln(rw, respStr)
-	*/
 	return
 }
 

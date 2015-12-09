@@ -25,7 +25,7 @@ type AccessToken struct {
 var strret string
 
 func pullHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	log.Println(r.URL.Path + "(pull)\n")
+	log.Println(r.URL.Path + "(pull)")
 	result, _ := ioutil.ReadAll(r.Body)
 	p := ds.DsPull{}
 
@@ -221,8 +221,6 @@ func download(url string, p ds.DsPull, w http.ResponseWriter, c chan int) (int64
 }
 
 func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string, err error) {
-	//log.Println("can't get access token,direct download..")
-	//return nil
 
 	log.Println("daemon: connecting to", DefaultServer+url, "to get accesstoken")
 	req, err := http.NewRequest("POST", DefaultServer+url, nil)
@@ -246,7 +244,6 @@ func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string
 
 		return "", "", errors.New(string(body))
 	} else {
-
 		t := AccessToken{}
 		result := &ds.Result{Data: &t}
 		if err = json.Unmarshal(body, result); err != nil {
@@ -256,12 +253,9 @@ func getAccessToken(url string, w http.ResponseWriter) (token, entrypoint string
 				//w.WriteHeader(http.StatusOK)
 				return t.Accesstoken, t.Entrypoint, nil
 			}
-
 		}
-
 	}
 	return "", "", errors.New("get access token error.")
-
 }
 
 func putToJobQueue(tag, destfilename, stat string /*, stat os.FileInfo*/) string {
